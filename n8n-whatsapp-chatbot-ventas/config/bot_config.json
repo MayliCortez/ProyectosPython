@@ -1,0 +1,92 @@
+{
+  "negocio": {
+    "nombre": "Tu Comunidad",
+    "descripcion": "Comunidad de mentorias y crecimiento profesional",
+    "moneda": "USD",
+    "zona_horaria": "America/Mexico_City"
+  },
+
+  "productos": [
+    {
+      "id": "mentoria_individual",
+      "nombre": "Mentoria Individual 1:1",
+      "precio": 97,
+      "descripcion": "Sesion personalizada de 60 minutos donde trabajamos tu caso especifico",
+      "beneficios": [
+        "Atencion 100% personalizada",
+        "Plan de accion a tu medida",
+        "Seguimiento por 7 dias despues de la sesion",
+        "Acceso a materiales exclusivos"
+      ],
+      "disponible": true
+    },
+    {
+      "id": "mentoria_grupal",
+      "nombre": "Mentoria Grupal",
+      "precio": 47,
+      "descripcion": "Sesion grupal semanal con la comunidad",
+      "beneficios": [
+        "Networking con personas en tu mismo camino",
+        "Sesiones en vivo cada semana",
+        "Comunidad privada de apoyo",
+        "Grabaciones disponibles si no puedes asistir"
+      ],
+      "disponible": true
+    },
+    {
+      "id": "comunidad_premium",
+      "nombre": "Acceso Comunidad Premium",
+      "precio": 27,
+      "descripcion": "Acceso mensual a la comunidad con contenido exclusivo",
+      "beneficios": [
+        "Contenido nuevo cada semana",
+        "Grupo privado de networking",
+        "Descuentos en mentorias",
+        "Recursos y plantillas descargables"
+      ],
+      "disponible": true
+    }
+  ],
+
+  "promocion_activa": {
+    "activa": false,
+    "nombre": "",
+    "descuento": "",
+    "codigo": "",
+    "fecha_fin": "",
+    "mensaje": ""
+  },
+
+  "contactos_bloqueados": {
+    "descripcion": "Numeros que el bot NUNCA debe responder. Formato internacional sin +",
+    "numeros": [
+      "NUMERO_PAPA",
+      "NUMERO_MAMA",
+      "NUMERO_NOVIO"
+    ],
+    "notas": "Reemplaza NUMERO_PAPA, NUMERO_MAMA y NUMERO_NOVIO con los numeros reales. Ejemplo: 521234567890"
+  },
+
+  "ignorar_grupos": true,
+
+  "metodo_pago": {
+    "instrucciones": "Para realizar tu pago puedes hacerlo por transferencia o por el link que te comparto",
+    "link_pago": "TU_LINK_DE_PAGO_AQUI",
+    "datos_transferencia": "Banco: ---\nNombre: ---\nCuenta: ---\nCLABE: ---"
+  },
+
+  "horario_atencion": {
+    "activo_24h": true,
+    "mensaje_fuera_horario": ""
+  },
+
+  "personalidad": {
+    "nombre_asistente": "Asistente de [TU NOMBRE]",
+    "tono": "amigable, profesional, cercano pero no desesperado",
+    "idioma": "espanol",
+    "usar_emojis": true,
+    "longitud_respuesta": "corta y directa, maximo 3-4 oraciones por mensaje"
+  },
+
+  "instrucciones_extra": "Aqui puedes agregar cualquier instruccion adicional. Por ejemplo: 'Esta semana estamos enfocados en el lanzamiento del curso X' o 'Si preguntan por el curso de redes sociales, decir que abre inscripciones el proximo lunes'"
+}

@@ -1,0 +1,102 @@
+version: "3.8"
+
+services:
+  # ============================================
+  # n8n - Motor de automatizacion
+  # ============================================
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n-chatbot
+    restart: unless-stopped
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=admin
+      - N8N_BASIC_AUTH_PASSWORD=CambiameYA2024
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - GENERIC_TIMEZONE=America/Mexico_City
+      - TZ=America/Mexico_City
+      - N8N_SECURE_COOKIE=false
+      - WEBHOOK_URL=http://localhost:5678/
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./config:/home/node/config:ro
+    networks:
+      - chatbot-network
+
+  # ============================================
+  # Evolution API - Conexion a WhatsApp
+  # ============================================
+  evolution-api:
+    image: atendai/evolution-api:latest
+    container_name: evolution-api
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - AUTHENTICATION_API_KEY=tu_api_key_segura_cambiar
+      - AUTHENTICATION_EXPOSE_IN_FETCH_INSTANCES=true
+      - SERVER_URL=http://localhost:8080
+      - SERVER_PORT=8080
+      - DATABASE_PROVIDER=postgresql
+      - DATABASE_CONNECTION_URI=postgresql://postgres:postgres123@postgres:5432/evolution
+      - DATABASE_CONNECTION_CLIENT_NAME=evolution
+      - DATABASE_SAVE_DATA_INSTANCE=true
+      - DATABASE_SAVE_DATA_NEW_MESSAGE=true
+      - DATABASE_SAVE_MESSAGE_UPDATE=true
+      - DATABASE_SAVE_DATA_CONTACTS=true
+      - DATABASE_SAVE_DATA_CHATS=true
+      - RABBITMQ_ENABLED=false
+      - WEBSOCKET_ENABLED=false
+      - LOG_LEVEL=WARN
+    volumes:
+      - evolution_data:/evolution/instances
+    depends_on:
+      - postgres
+    networks:
+      - chatbot-network
+
+  # ============================================
+  # PostgreSQL - Base de datos
+  # ============================================
+  postgres:
+    image: postgres:15
+    container_name: postgres-chatbot
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres123
+      - POSTGRES_DB=evolution
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - chatbot-network
+
+  # ============================================
+  # Redis - Cache (opcional, mejora rendimiento)
+  # ============================================
+  redis:
+    image: redis:7-alpine
+    container_name: redis-chatbot
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - chatbot-network
+
+volumes:
+  n8n_data:
+  evolution_data:
+  postgres_data:
+  redis_data:
+
+networks:
+  chatbot-network:
+    driver: bridge

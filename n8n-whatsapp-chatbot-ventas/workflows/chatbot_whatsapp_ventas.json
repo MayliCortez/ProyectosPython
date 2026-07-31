@@ -1,0 +1,336 @@
+{
+  "name": "WhatsApp Chatbot Ventas - Mentorias",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp-webhook",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "webhook-entrada",
+      "name": "Webhook WhatsApp",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "check-grupo",
+              "leftValue": "={{ $json.body.data.isGroup }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "filtro-grupos",
+      "name": "Filtrar Grupos",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================\n// CONFIGURACION DE CONTACTOS BLOQUEADOS\n// Agrega los numeros que el bot NO debe responder\n// Formato: codigo de pais + numero, sin + ni espacios\n// Ejemplo: '521234567890' para Mexico\n// ============================================\n\nconst contactosBloqueados = [\n  'NUMERO_PAPA',     // Papa - reemplazar con numero real\n  'NUMERO_MAMA',     // Mama - reemplazar con numero real  \n  'NUMERO_NOVIO'     // Novio - reemplazar con numero real\n];\n\n// Extraer el numero del remitente\nconst mensajeData = $input.first().json.body?.data || $input.first().json.body || {};\nconst remitente = mensajeData.key?.remoteJid || mensajeData.remoteJid || '';\nconst numeroLimpio = remitente.replace('@s.whatsapp.net', '').replace('@g.us', '');\n\n// Verificar si esta bloqueado\nconst estaBloqueado = contactosBloqueados.some(num => \n  numeroLimpio.includes(num) || num.includes(numeroLimpio)\n);\n\n// Extraer el mensaje de texto\nconst mensaje = mensajeData.message?.conversation || \n                mensajeData.message?.extendedTextMessage?.text ||\n                mensajeData.message?.imageMessage?.caption ||\n                mensajeData.message?.videoMessage?.caption ||\n                '';\n\n// Detectar si es un mensaje de estado/story\nconst esEstado = remitente === 'status@broadcast';\n\n// Verificar que sea un mensaje entrante (no enviado por nosotros)\nconst esEntrante = !mensajeData.key?.fromMe;\n\nreturn [{\n  json: {\n    remitente: numeroLimpio,\n    remoteJid: remitente,\n    mensaje: mensaje,\n    estaBloqueado: estaBloqueado,\n    esEstado: esEstado,\n    esEntrante: esEntrante,\n    tieneTexto: mensaje.length > 0,\n    timestamp: new Date().toISOString(),\n    nombreContacto: mensajeData.pushName || 'Desconocido'\n  }\n}];"
+      },
+      "id": "procesar-mensaje",
+      "name": "Procesar Mensaje",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [680, 200]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "no-bloqueado",
+              "leftValue": "={{ $json.estaBloqueado }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "es-entrante",
+              "leftValue": "={{ $json.esEntrante }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "tiene-texto",
+              "leftValue": "={{ $json.tieneTexto }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "no-estado",
+              "leftValue": "={{ $json.esEstado }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "verificar-contacto",
+      "name": "Verificar Contacto Permitido",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================\n// CONFIGURACION DEL BOT - EDITA AQUI\n// ============================================\n\nconst config = {\n  // DATOS DEL NEGOCIO\n  nombreNegocio: 'Tu Comunidad',\n  nombreAsistente: 'Asistente de [TU NOMBRE]',\n  \n  // PRODUCTOS - Modifica precios, nombres y descripciones\n  productos: [\n    {\n      nombre: 'Mentoria Individual 1:1',\n      precio: '$97 USD',\n      descripcion: 'Sesion personalizada de 60 min para trabajar tu caso especifico',\n      beneficios: 'Atencion personalizada, plan de accion, seguimiento 7 dias, materiales exclusivos'\n    },\n    {\n      nombre: 'Mentoria Grupal',\n      precio: '$47 USD',\n      descripcion: 'Sesion grupal semanal con la comunidad',\n      beneficios: 'Networking, sesiones en vivo semanales, comunidad privada, grabaciones'\n    },\n    {\n      nombre: 'Comunidad Premium',\n      precio: '$27 USD/mes',\n      descripcion: 'Acceso mensual con contenido exclusivo',\n      beneficios: 'Contenido semanal, grupo privado, descuentos en mentorias, recursos descargables'\n    }\n  ],\n  \n  // PROMOCION ACTIVA - Cambia a true cuando tengas promo\n  promocionActiva: false,\n  promocion: {\n    nombre: '',\n    descuento: '',\n    codigo: '',\n    fechaFin: '',\n    mensaje: ''\n  },\n  \n  // METODO DE PAGO\n  metodoPago: 'Para realizar tu pago puedes hacerlo por transferencia o por el link que te comparto. Link: [TU_LINK]',\n  \n  // INSTRUCCIONES EXTRA - Agrega aqui lo que quieras\n  instruccionesExtra: 'Sin instrucciones adicionales por ahora'\n};\n\n// Construir el prompt del sistema\nconst productosTexto = config.productos.map(p => \n  `- ${p.nombre} (${p.precio}): ${p.descripcion}. Beneficios: ${p.beneficios}`\n).join('\\n');\n\nlet promoTexto = '';\nif (config.promocionActiva) {\n  promoTexto = `\\n\\nPROMOCION ACTIVA: ${config.promocion.nombre} - ${config.promocion.descuento}. Codigo: ${config.promocion.codigo}. Valida hasta: ${config.promocion.fechaFin}. Mencionala de forma natural cuando sea relevante.`;\n}\n\nconst systemPrompt = `Eres el asistente personal de ${config.nombreAsistente} en WhatsApp. Atiendes personas interesadas en mentorias y la comunidad.\n\nPERSONALIDAD:\n- Hablas como persona real, NUNCA como robot\n- Tono amigable, profesional, cercano pero sin ser desesperado\n- Mensajes CORTOS: maximo 3-4 oraciones\n- Usas 1-2 emojis por mensaje, natural\n- NUNCA dices que eres bot o IA. Si preguntan: \"Soy parte del equipo\"\n- Escribes como en WhatsApp: natural, directo\n\nTECNICAS DE VENTA:\n1. ESPEJO EMOCIONAL: Antes de vender, conecta con lo que siente. Valida su emocion\n2. PREGUNTAS ESTRATEGICAS: No bombardees info. Pregunta que necesitan\n3. DOLOR > SOLUCION > ACCION: Refleja su dolor, presenta solucion, da paso claro\n4. URGENCIA REAL: Solo si hay promo o disponibilidad limitada real\n5. CIERRE SUAVE: Guia, no presiones. \"Te gustaria que te cuente como funciona?\"\n6. OBJECIONES:\n   - \"Es caro\" > Habla del valor, compara con costo de no actuar\n   - \"Lo pienso\" > \"Claro, tomate tu tiempo. Solo que [beneficio urgente]\"\n   - \"No tengo tiempo\" > \"Esta disenado para personas ocupadas\"\n   - \"No se si es para mi\" > Pregunta mas para personalizar\n\nPRODUCTOS:\n${productosTexto}\n${promoTexto}\n\nMETODO DE PAGO:\n${config.metodoPago}\n\nREGLAS CRITICAS:\n- NUNCA inventes info que no esta aqui\n- NUNCA prometas cosas no listadas\n- Si no sabes: \"Dejame confirmarlo y te aviso\"\n- Si piden hablar con [nombre]: \"Claro, le paso tu mensaje\"\n- Si hay queja: NO vendas, escucha y ofrece solucion\n- Responde SOLO al mensaje actual\n- No mandes mensajes largos\n\n${config.instruccionesExtra}\n\nFLUJO: Saludo breve > Pregunta > Escucha > Solucion > Dudas > Cierre suave > Pago > Confirma`;\n\nconst mensajeUsuario = $input.first().json.mensaje;\nconst nombreContacto = $input.first().json.nombreContacto;\n\nreturn [{\n  json: {\n    systemPrompt: systemPrompt,\n    mensajeUsuario: mensajeUsuario,\n    nombreContacto: nombreContacto,\n    remitente: $input.first().json.remitente,\n    remoteJid: $input.first().json.remoteJid,\n    timestamp: $input.first().json.timestamp\n  }\n}];"
+      },
+      "id": "preparar-prompt",
+      "name": "Preparar Prompt de Ventas",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1140, 100]
+    },
+    {
+      "parameters": {
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "={{$credentials.anthropicApi.apiKey}}"
+            },
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"claude-sonnet-4-20250514\",\n  \"max_tokens\": 300,\n  \"system\": {{ JSON.stringify($json.systemPrompt) }},\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"Me llamo {{ $json.nombreContacto }}. Mi mensaje: {{ $json.mensajeUsuario }}\"\n    }\n  ]\n}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "id": "llamar-ia",
+      "name": "Claude AI - Generar Respuesta",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1380, 100],
+      "notes": "Cambia el modelo si prefieres otro. Opciones:\n- claude-sonnet-4-20250514 (rapido, bueno)\n- claude-haiku-4-5-20251001 (mas rapido, mas barato)\n- claude-opus-4-20250918 (mejor calidad, mas lento)\n\nTambien puedes usar OpenAI cambiando la URL y el body.\nO usar el nodo nativo de n8n 'AI Agent' con el modelo que prefieras."
+    },
+    {
+      "parameters": {
+        "jsCode": "const response = $input.first().json;\n\n// Extraer la respuesta de Claude\nlet respuestaBot = '';\n\nif (response.content && response.content.length > 0) {\n  respuestaBot = response.content[0].text;\n} else if (response.error) {\n  respuestaBot = 'Hola! Dame un momento, ya te atiendo personalmente';\n}\n\n// Limpiar la respuesta\nrespuestaBot = respuestaBot.trim();\n\n// Si la respuesta es muy larga, cortarla\nif (respuestaBot.length > 500) {\n  const punto = respuestaBot.lastIndexOf('.', 500);\n  if (punto > 200) {\n    respuestaBot = respuestaBot.substring(0, punto + 1);\n  }\n}\n\nreturn [{\n  json: {\n    respuesta: respuestaBot,\n    remitente: $('Preparar Prompt de Ventas').first().json.remitente,\n    remoteJid: $('Preparar Prompt de Ventas').first().json.remoteJid\n  }\n}];"
+      },
+      "id": "procesar-respuesta",
+      "name": "Procesar Respuesta IA",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1600, 100]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Delay aleatorio para que no parezca bot (1-4 segundos)\nconst delay = Math.floor(Math.random() * 3000) + 1000;\nawait new Promise(resolve => setTimeout(resolve, delay));\n\nreturn $input.all();"
+      },
+      "id": "delay-natural",
+      "name": "Delay Natural",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1820, 100]
+    },
+    {
+      "parameters": {
+        "url": "=http://evolution-api:8080/message/sendText/{{$credentials.evolutionInstance}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$credentials.evolutionApiKey}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"number\": \"{{ $json.remitente }}\",\n  \"text\": {{ JSON.stringify($json.respuesta) }}\n}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "enviar-whatsapp",
+      "name": "Enviar Respuesta WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2040, 100]
+    },
+    {
+      "parameters": {},
+      "id": "no-responder",
+      "name": "No Responder (Bloqueado/Grupo)",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1140, 400]
+    }
+  ],
+  "connections": {
+    "Webhook WhatsApp": {
+      "main": [
+        [
+          {
+            "node": "Filtrar Grupos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filtrar Grupos": {
+      "main": [
+        [
+          {
+            "node": "Procesar Mensaje",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Responder (Bloqueado/Grupo)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Procesar Mensaje": {
+      "main": [
+        [
+          {
+            "node": "Verificar Contacto Permitido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar Contacto Permitido": {
+      "main": [
+        [
+          {
+            "node": "Preparar Prompt de Ventas",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Responder (Bloqueado/Grupo)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Prompt de Ventas": {
+      "main": [
+        [
+          {
+            "node": "Claude AI - Generar Respuesta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude AI - Generar Respuesta": {
+      "main": [
+        [
+          {
+            "node": "Procesar Respuesta IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Procesar Respuesta IA": {
+      "main": [
+        [
+          {
+            "node": "Delay Natural",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delay Natural": {
+      "main": [
+        [
+          {
+            "node": "Enviar Respuesta WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "WhatsApp",
+      "id": "1"
+    },
+    {
+      "name": "Ventas",
+      "id": "2"
+    },
+    {
+      "name": "Chatbot",
+      "id": "3"
+    }
+  ]
+}

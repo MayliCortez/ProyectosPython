@@ -1,0 +1,109 @@
+{
+  "name": "WhatsApp - Publicar Estados Automaticos",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9,
+              "triggerAtMinute": 0
+            },
+            {
+              "triggerAtHour": 13,
+              "triggerAtMinute": 0
+            },
+            {
+              "triggerAtHour": 18,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      },
+      "id": "scheduler-estados",
+      "name": "Horarios de Estados",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [240, 300],
+      "notes": "Configura los horarios en que se publican estados.\nPor defecto: 9am, 1pm, 6pm.\nPuedes agregar o quitar horarios."
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================\n// ESTADOS DE WHATSAPP - CONFIGURA AQUI\n// ============================================\n// Agrega, quita o modifica los estados que quieras publicar.\n// El bot rotara entre ellos automaticamente.\n// Puedes poner emojis, saltos de linea, etc.\n// ============================================\n\nconst estados = [\n  // === TESTIMONIOS / PRUEBA SOCIAL ===\n  '\"Desde que entre a la comunidad, mi vida cambio completamente\" - Testimonio real de una de nuestras alumnas \\n\\nTu tambien puedes lograrlo. Escríbeme y te cuento como',\n  \n  'Otro mes, otra transformacion increible de nuestros alumnos \\n\\nLas mentorias funcionan porque no te dejamos solo en el proceso \\n\\nQuieres saber mas? Escribeme',\n\n  // === VALOR / TIPS ===\n  'El secreto que nadie te dice: no necesitas tenerlo todo claro para empezar. Solo necesitas dar el primer paso \\n\\nYo puedo ayudarte a darlo',\n  \n  'Error #1 que veo en personas que quieren crecer: intentar hacerlo solos \\n\\nPor eso creamos esta comunidad, para que no tengas que pasar por eso',\n\n  // === LLAMADO A LA ACCION ===\n  'Lugares limitados para la mentoria de este mes \\n\\nSi llevas tiempo pensandolo, este es tu momento \\n\\nEscribeme \"INFO\" y te cuento todo',\n  \n  'Que pasaria si en 30 dias estuvieras en un lugar completamente diferente? \\n\\nYo te ayudo a llegar ahi. Escribeme',\n\n  // === LIFESTYLE / CERCANIA ===\n  'Preparando contenido nuevo para la comunidad \\n\\nSe vienen cosas increibles esta semana',\n  \n  'Live en unos minutos! No te lo pierdas \\n\\nHoy hablamos de [tema del dia]',\n\n  // === URGENCIA / PROMO ===\n  'Solo por hoy tenemos algo especial para ti \\n\\nEscribeme \"PROMO\" y te cuento',\n  \n  'Ultimos dias para aprovechar el precio actual \\n\\nDespues sube. Escribeme y no te quedes fuera'\n];\n\n// Seleccionar estado basado en la hora del dia y rotacion\nconst hora = new Date().getHours();\nconst dia = new Date().getDay();\nconst indice = (dia * 3 + Math.floor(hora / 8)) % estados.length;\n\nconst estadoSeleccionado = estados[indice];\n\nreturn [{\n  json: {\n    texto: estadoSeleccionado,\n    hora: hora,\n    dia: dia,\n    indice: indice\n  }\n}];"
+      },
+      "id": "seleccionar-estado",
+      "name": "Seleccionar Estado",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "url": "=http://evolution-api:8080/message/sendStatus/{{$credentials.evolutionInstance}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$credentials.evolutionApiKey}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"type\": \"text\",\n  \"content\": {{ JSON.stringify($json.texto) }},\n  \"backgroundColor\": \"#075E54\",\n  \"font\": 2,\n  \"allContacts\": true\n}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "publicar-estado",
+      "name": "Publicar Estado WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 300],
+      "notes": "Publica el estado en WhatsApp via Evolution API.\nbackgroundColor: color de fondo del estado\nfont: tipo de fuente (0-5)\nallContacts: true = visible para todos"
+    }
+  ],
+  "connections": {
+    "Horarios de Estados": {
+      "main": [
+        [
+          {
+            "node": "Seleccionar Estado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Seleccionar Estado": {
+      "main": [
+        [
+          {
+            "node": "Publicar Estado WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "WhatsApp",
+      "id": "1"
+    },
+    {
+      "name": "Estados",
+      "id": "4"
+    }
+  ]
+}
