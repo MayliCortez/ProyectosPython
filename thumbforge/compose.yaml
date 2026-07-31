@@ -1,0 +1,83 @@
+# thumbforge - orquestacion local.
+#
+# Antes de la primera corrida:
+#   cp .env.example .env
+#   echo "UID=$(id -u)" >> .env && echo "GID=$(id -g)" >> .env   # Linux/Mac
+#
+# Uso normal (la CLI es de un solo disparo, no un servicio que queda prendido):
+#   docker compose run --rm app thumbforge doctor
+#   docker compose run --rm app thumbforge perfiles --detalle
+#   docker compose run --rm app thumbforge politica --perfil tc --concepto ejemplos/conceptos_true_crime.json
+
+# Todo lo compartido entre servicios vive en este anclaje: un solo lugar donde
+# cambiar los volumenes o el mapeo de usuario.
+x-thumbforge-comun: &comun
+  build:
+    context: .
+    dockerfile: Dockerfile
+
+  # Los secretos entran por aca y solo por aca. Nunca al Dockerfile (quedarian
+  # en la imagen y en su historial de capas) ni escritos en este archivo, que
+  # si se versiona.
+  env_file: .env
+
+  # El contenedor corre con el UID/GID del host: lo que aparece en ./salida
+  # queda propiedad de quien invoca, no de root. Sin esto, en Linux, cada
+  # miniatura generada requiere un sudo para borrarla.
+  user: "${UID:-1000}:${GID:-1000}"
+
+  # Los cuatro volumenes son BIND, no volumenes nombrados: se ven, se editan y
+  # se respaldan desde el explorador de archivos como carpetas comunes. La
+  # imagen no contiene ninguno de estos datos, asi que reconstruirla o
+  # actualizarla no borra ni un perfil ni una miniatura.
+  volumes:
+    - ./perfiles:/app/perfiles      # TF_PERFILES_DIR - perfiles, fuentes, assets, corpus
+    - ./data:/app/data              # TF_DATA_DIR     - insumos y estado intermedio
+    - ./salida:/app/salida          # TF_SALIDA_DIR   - miniaturas generadas
+    - ./.cache:/app/.cache          # TF_CACHE_DIR    - descargas y respuestas cacheadas
+
+  # doctor --quiet no toca la red: sale 0 si todo esta en orden, 1 si hay algo
+  # que impide trabajar (volumen sin escritura, perfil roto, Pillow sin
+  # freetype). Es el mismo chequeo que corre una persona a mano.
+  healthcheck:
+    test: ["CMD", "thumbforge", "doctor", "--quiet"]
+    interval: 60s
+    timeout: 20s
+    start_period: 10s
+    retries: 3
+
+  # PID 1 real, para que Ctrl-C y las senales lleguen al proceso de Python.
+  init: true
+
+services:
+  # La CLI. Pensado para 'docker compose run --rm app <comando>'; el command de
+  # abajo es solo lo que hace un 'docker compose up app' pelado.
+  app:
+    <<: *comun
+    image: thumbforge:0.1.0
+    command: ["thumbforge", "doctor"]
+
+  # Interfaz web. TODAVIA NO EXISTE: llega en el paso 8 del orden de
+  # construccion. Queda declarada bajo el perfil 'web' para que no arranque
+  # sola y para fijar ahora el contrato que el paso 8 tiene que cumplir:
+  # app/web.py con un objeto ASGI llamado 'app'. Ver docs/empaquetado.md.
+  #
+  #   docker compose --profile web up web
+  web:
+    <<: *comun
+    profiles: ["web"]
+    image: thumbforge:0.1.0-web
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        # uvicorn y fastapi son el extra [web] de pyproject.toml: no entran a
+        # la imagen de la CLI.
+        TF_EXTRAS: "[web]"
+    command: ["uvicorn", "app.web:app", "--host", "0.0.0.0", "--port", "8000"]
+    # Publicado solo en loopback: la interfaz no tiene autenticacion y maneja
+    # claves de API. Para exponerla en la LAN hay que cambiarlo a "8000:8000"
+    # a sabiendas.
+    ports:
+      - "127.0.0.1:8000:8000"
+    restart: unless-stopped
