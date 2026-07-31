@@ -1,0 +1,43 @@
+[
+  {
+    "id": "tr-1-valido",
+    "estrategia": "objeto como sujeto, comparacion directa",
+    "eje": "rostro_humano_vs_objeto",
+    "hipotesis": "Los dos equipos enfrentados en diagonal plantean el duelo antes de leer el texto.",
+    "copy": {
+      "texto": "Pixel 9 contra Galaxy S25",
+      "producto": "Pixel 9",
+      "entidades": [{"tipo": "producto", "valor": "Pixel 9"}, {"tipo": "producto", "valor": "Galaxy S25"}]
+    },
+    "base_visual": {
+      "origen": "foto_archivo",
+      "categoria": "producto_identificable",
+      "descripcion": "Fotos de prensa de ambos equipos, recorte a fondo transparente.",
+      "fuente_sugerida": "kit de prensa del fabricante"
+    },
+    "capas": [
+      {"origen": "generada", "categoria": "fondo_abstracto", "descripcion": "Gradiente con lineas de luz."},
+      {"origen": "generada", "categoria": "grafico_comparativo", "descripcion": "Barra de contraste entre ambos."}
+    ],
+    "reglas_aplicadas": []
+  },
+  {
+    "id": "tr-2-producto-generado",
+    "estrategia": "objeto como sujeto, consecuencia",
+    "eje": "momento_de_tension_vs_consecuencia",
+    "hipotesis": "Un render propio permite el angulo exacto que la foto de prensa no da.",
+    "copy": {
+      "texto": "3 anos con este telefono",
+      "producto": "este telefono",
+      "entidades": [{"tipo": "producto", "valor": "Pixel 9"}]
+    },
+    "base_visual": {
+      "origen": "generada",
+      "categoria": "producto_identificable",
+      "descripcion": "Render del telefono en angulo cenital.",
+      "fuente_sugerida": "generacion por API"
+    },
+    "capas": [],
+    "reglas_aplicadas": []
+  }
+]

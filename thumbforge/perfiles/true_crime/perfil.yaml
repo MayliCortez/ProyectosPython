@@ -1,0 +1,76 @@
+nombre: "Expediente Cerrado"
+alias: ["tc", "crimen"]
+idioma: "es-419"
+descripcion_audiencia: >-
+  Hispanohablantes 22-50, casos reales documentados. Rechazan el morbo
+  explicito y castigan el sensacionalismo en comentarios.
+
+politica_base_visual:
+  # Solo archivo licenciado. Al no figurar "generada" en el orden de
+  # preferencia, cualquier concepto que proponga generar queda rechazado
+  # aunque la categoria no este listada abajo.
+  orden_preferencia: ["foto_archivo"]
+  generacion_ia_permitida_para: []      # lista vacia y presente = nada es generable
+  generacion_ia_prohibida_para:
+    - "persona_real"
+    - "victima"
+    - "perpetrador"
+    - "testigo"
+    - "escena_del_crimen"
+    - "evidencia"
+    - "documento_judicial"
+    - "lugar_real"
+  categorias_prohibidas:
+    - "cadaver"
+    - "sangre"
+    - "herida"
+    - "violencia_explicita"
+    - "menor_de_edad"
+  razon_categorias_prohibidas: >-
+    Material grafico de heridas, cadaveres o menores no entra en la miniatura en
+    ningun origen, ni siquiera con licencia: es sensacionalismo, arriesga la
+    monetizacion y la audiencia de este canal lo castiga en comentarios.
+  razon: >-
+    Generar con IA el rostro de una persona real -victima o perpetrador- es un
+    problema legal (derecho de imagen, difamacion), de politica de plataforma y
+    etico. Una recreacion sintetica presentada junto a un caso real afirma algo
+    que no ocurrio. Este perfil lo bloquea en el motor, no en la memoria del
+    operador.
+
+personas_reales:
+  aparecen: true
+  categorias: ["persona_real", "victima", "perpetrador", "testigo", "familiar"]
+  solo_licencia_verificada: true
+  generar_con_ia: false
+  razon: >-
+    Restriccion maxima: solo material de archivo con licencia verificable y
+    fuente citable. Sin licencia registrada no se compone la miniatura.
+
+copy:
+  max_palabras: 3
+  prohibido:
+    - "!"
+    - "MAYUSCULAS EN TODA LA LINEA"
+    - "emojis"
+    - "clickbait numerico"
+    - "brutal"
+    - "escalofriante"
+    - "macabro"
+    - "sangriento"
+  prohibir_entidades: ["victima", "menor", "familiar"]
+  razon_entidades: >-
+    Nombrar a la victima en la miniatura la expone a ella y a su familia cada
+    vez que el video aparece en una recomendacion. El caso se nombra por el
+    hecho, no por la persona.
+  registro: "seco, factual, sin adjetivos de impacto"
+  no_duplicar_titulo: true
+
+corpus:
+  canales_referencia: []
+  queries:
+    - "caso documentado investigacion policial"
+    - "documental caso real espanol"
+
+campos_extra_anotacion:
+  - "tipo_material_archivo"
+  - "nivel_sensibilidad"

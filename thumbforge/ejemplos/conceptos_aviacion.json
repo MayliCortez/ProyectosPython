@@ -1,0 +1,61 @@
+[
+  {
+    "id": "av-1-valido",
+    "estrategia": "objeto como sujeto, momento de tension",
+    "eje": "rostro_humano_vs_objeto",
+    "hipotesis": "El fuselaje danado en primer plano cuenta el riesgo sin necesidad de texto explicativo.",
+    "copy": {
+      "texto": "El regreso del P-51",
+      "nombre_reconocible": "P-51",
+      "entidades": [{"tipo": "modelo", "valor": "P-51 Mustang"}]
+    },
+    "base_visual": {
+      "origen": "foto_archivo",
+      "categoria": "aeronave_identificable",
+      "descripcion": "P-51 con danos de combate, tres cuartos delantero.",
+      "fuente_sugerida": "Wikimedia Commons, USAAF, dominio publico"
+    },
+    "capas": [
+      {"origen": "generada", "categoria": "cielo", "descripcion": "Cielo cargado al atardecer para separar la silueta."}
+    ],
+    "reglas_aplicadas": []
+  },
+  {
+    "id": "av-2-ia-sobre-aeronave",
+    "estrategia": "objeto como sujeto, consecuencia",
+    "eje": "momento_de_tension_vs_consecuencia",
+    "hipotesis": "Un render limpio del avion permite control total del encuadre.",
+    "copy": {
+      "texto": "Ultimo vuelo del Mustang",
+      "nombre_reconocible": "Mustang",
+      "entidades": [{"tipo": "modelo", "valor": "P-51 Mustang"}]
+    },
+    "base_visual": {
+      "origen": "generada",
+      "categoria": "aeronave_identificable",
+      "descripcion": "P-51 generado en picada.",
+      "fuente_sugerida": "generacion por API"
+    },
+    "capas": [],
+    "reglas_aplicadas": []
+  },
+  {
+    "id": "av-3-copy-fuera-de-politica",
+    "estrategia": "rostro humano, tension",
+    "eje": "texto_que_nombra_vs_texto_que_pregunta",
+    "hipotesis": "El rostro del piloto humaniza el relato tecnico.",
+    "copy": {
+      "texto": "INCREIBLE! 5 cosas que nadie te conto del Mustang",
+      "nombre_reconocible": "Mustang",
+      "entidades": [{"tipo": "modelo", "valor": "P-51 Mustang"}]
+    },
+    "base_visual": {
+      "origen": "foto_archivo",
+      "categoria": "piloto_identificado",
+      "descripcion": "Retrato de piloto en cabina, 1944.",
+      "fuente_sugerida": "archivo nacional"
+    },
+    "capas": [],
+    "reglas_aplicadas": []
+  }
+]

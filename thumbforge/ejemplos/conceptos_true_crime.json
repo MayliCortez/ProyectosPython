@@ -1,0 +1,61 @@
+[
+  {
+    "id": "tc-1-valido",
+    "estrategia": "objeto como sujeto, consecuencia",
+    "eje": "rostro_humano_vs_objeto",
+    "hipotesis": "El expediente cerrado sobre el escritorio dice 'caso resuelto' sin mostrar a nadie.",
+    "copy": {
+      "texto": "Catorce anos despues",
+      "entidades": [{"tipo": "hecho", "valor": "reapertura del caso"}]
+    },
+    "base_visual": {
+      "origen": "foto_archivo",
+      "categoria": "documento_judicial",
+      "descripcion": "Carpeta de expediente sellada, luz lateral dura.",
+      "fuente_sugerida": "banco con licencia",
+      "licencia": "CC BY 4.0, archivo publico"
+    },
+    "capas": [],
+    "reglas_aplicadas": []
+  },
+  {
+    "id": "tc-2-rostro-generado",
+    "estrategia": "rostro humano, tension",
+    "eje": "rostro_humano_vs_objeto",
+    "hipotesis": "Un retrato del perpetrador da rostro al relato y sostiene la mirada del espectador.",
+    "copy": {
+      "texto": "El vecino silencioso",
+      "entidades": [{"tipo": "hecho", "valor": "detencion"}]
+    },
+    "base_visual": {
+      "origen": "generada",
+      "categoria": "perpetrador",
+      "descripcion": "Retrato fotorrealista del acusado, mirada a camara.",
+      "fuente_sugerida": "generacion por API"
+    },
+    "capas": [
+      {"origen": "generada", "categoria": "escena_del_crimen", "descripcion": "Reconstruccion del living."}
+    ],
+    "reglas_aplicadas": []
+  },
+  {
+    "id": "tc-3-nombra-victima",
+    "estrategia": "texto que nombra",
+    "eje": "texto_que_nombra_vs_texto_que_pregunta",
+    "hipotesis": "Nombrar a la victima genera identificacion inmediata.",
+    "copy": {
+      "texto": "Quien mato a Ana Ruiz",
+      "entidades": [{"tipo": "victima", "valor": "Ana Ruiz"}]
+    },
+    "base_visual": {
+      "origen": "foto_archivo",
+      "categoria": "victima",
+      "descripcion": "Foto familiar de la victima.",
+      "fuente_sugerida": "prensa"
+    },
+    "capas": [
+      {"origen": "foto_archivo", "categoria": "sangre", "descripcion": "Detalle del piso de la escena."}
+    ],
+    "reglas_aplicadas": []
+  }
+]

@@ -1,0 +1,41 @@
+[project]
+name = "thumbforge"
+version = "0.1.0"
+description = "Motor de miniaturas multi-nicho. El motor no sabe nada del nicho: todo lo especifico vive en perfiles/."
+requires-python = ">=3.12"
+license = { text = "MIT" }
+
+# Dependencias pinneadas a version exacta. Sin torch, sin numpy, sin
+# compiladores: la imagen tiene que quedar por debajo de 600 MB y correr
+# en amd64 y arm64 sin GPU.
+dependencies = [
+    "Pillow==12.3.0",
+    "PyYAML==6.0.3",
+    "httpx==0.28.1",
+    "python-dotenv==1.2.2",
+]
+
+[project.optional-dependencies]
+web = [
+    "fastapi==0.121.2",
+    "uvicorn==0.40.0",
+    "python-multipart==0.0.20",
+]
+# Solo para desarrollo: no entra a la imagen.
+dev = [
+    "pytest==9.1.1",
+]
+
+[project.scripts]
+thumbforge = "app.cli:main"
+
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+
+[tool.pytest.ini_options]
+testpaths = ["pruebas"]
+pythonpath = ["."]

@@ -1,0 +1,52 @@
+nombre: "Banco de Pruebas"
+alias: ["tech", "tr"]
+idioma: "es-419"
+descripcion_audiencia: >-
+  Hispanohablantes 18-45 que comparan antes de comprar. Toleran la estetica
+  fabricada; no toleran que el producto se vea distinto al real.
+
+politica_base_visual:
+  orden_preferencia: ["generada", "foto_editada", "foto_archivo"]
+  # Generacion libre para todo lo que no sea el producto en si.
+  generacion_ia_permitida_para:
+    - "fondo_abstracto"
+    - "textura"
+    - "gradiente"
+    - "escenario"
+    - "grafico_comparativo"
+    - "iluminacion"
+    - "objeto_generico"
+  generacion_ia_prohibida_para:
+    - "producto_identificable"
+    - "logotipo_de_marca"
+    - "persona_real"
+    - "grafico_de_datos_falso"
+  categorias_prohibidas: []
+  razon: >-
+    El producto sale de foto de prensa del fabricante: un render inventado con
+    un puerto de mas o un modulo de camara equivocado es lo unico que la
+    audiencia castiga. El resto del encuadre puede ser sintetico.
+
+personas_reales:
+  aparecen: false
+  categorias: ["persona_real"]
+  solo_licencia_verificada: false
+  generar_con_ia: false
+  razon: "El canal no muestra personas: el sujeto es siempre el producto."
+
+copy:
+  max_palabras: 5
+  debe_incluir: "producto"               # otro campo, mismo motor
+  prohibido: ["emojis"]
+  registro: "comparativo, directo, cifras concretas permitidas"
+  no_duplicar_titulo: false
+
+corpus:
+  canales_referencia: []
+  queries:
+    - "review comparativa telefono espanol"
+    - "analisis producto tecnologia"
+
+campos_extra_anotacion:
+  - "producto_visible"
+  - "tipo_comparacion"

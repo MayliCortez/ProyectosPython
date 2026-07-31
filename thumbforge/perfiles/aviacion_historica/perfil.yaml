@@ -1,0 +1,42 @@
+nombre: "Gigantes del Cielo"
+alias: ["gdc", "gigantes_del_cielo"]
+idioma: "es-419"
+descripcion_audiencia: >-
+  Hispanohablantes 25-55, interes en historia militar y aviacion.
+  Detectan errores tecnicos.
+
+politica_base_visual:
+  orden_preferencia: ["foto_archivo", "foto_editada", "generada"]
+  generacion_ia_permitida_para: ["cielo", "textura", "fondo_abstracto", "silueta_generica"]
+  generacion_ia_prohibida_para: ["aeronave_identificable", "persona_real", "insignia", "uniforme"]
+  categorias_prohibidas: []
+  razon: >-
+    La audiencia detecta un P-51 mal renderizado y pierde confianza en el canal.
+    Un cielo generado no lo nota nadie; un fuselaje generado lo nota todo el mundo.
+
+personas_reales:
+  aparecen: true
+  categorias: ["persona_real", "piloto_identificado", "tripulacion"]
+  solo_licencia_verificada: true
+  generar_con_ia: false
+  razon: >-
+    Los pilotos historicos son personas identificables. Se usan solo fotos de
+    dominio publico o con licencia verificada, nunca recreaciones sinteticas.
+
+copy:
+  max_palabras: 4
+  debe_incluir: "nombre_reconocible"     # modelo, persona o batalla
+  prohibido: ["!", "MAYUSCULAS EN TODA LA LINEA", "increible", "emojis", "clickbait numerico"]
+  registro: "sobrio, documental, tension contenida"
+  no_duplicar_titulo: true
+
+corpus:
+  canales_referencia: []
+  queries:
+    - "aviacion segunda guerra mundial documental"
+    - "historia de la aviacion militar"
+    - "batalla aerea documental espanol"
+
+campos_extra_anotacion:
+  - "epoca_aeronave"
+  - "tipo_archivo_visual"

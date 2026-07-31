@@ -1,0 +1,68 @@
+nombre: "Gigantes del Cielo - identidad visual"
+
+lienzo:
+  ancho: 1280
+  alto: 720
+
+paleta:
+  fondo: "#0a1f3d"
+  texto: "#f4efe2"
+  acento: "#e8b923"
+  sombra: "#000000"
+
+# Las tipografias se referencian por RUTA DE ARCHIVO, nunca por nombre de
+# familia: una fuente instalada en Windows no existe en Debian slim y Pillow
+# no avisa, cae a la default y arruina el render.
+tipografia:
+  titular:
+    archivo: "fonts/DejaVuSans-Bold.ttf"
+    tamano_max: 128
+    tamano_min: 58
+    interletrado: -2
+    mayusculas: false
+  secundario:
+    archivo: "fonts/DejaVuSans.ttf"
+    tamano_max: 44
+    tamano_min: 28
+    interletrado: 0
+    mayusculas: true
+
+texto:
+  posicion: "izq_inf"
+  ancho_max_pct: 60
+  interlineado: 1.04
+  color: "#f4efe2"
+  contorno:
+    grosor: 5
+    color: "#04101f"
+  sombra:
+    desplazamiento: [5, 5]
+    desenfoque: 10
+    opacidad: 0.55
+
+placa:
+  activa: false
+
+gradiente:
+  activo: true
+  color: "#04101f"
+  opacidad: 0.70
+  direccion: "abajo"
+  alto_pct: 55
+
+barra_acento:
+  activa: true
+  color: "#e8b923"
+  grosor_px: 8
+  posicion: "sobre_texto"
+
+logo:
+  archivo: "assets/logo.png"
+  posicion: "izq_sup"
+  ancho_pct: 14
+  opacidad: 0.92
+  margen_pct: 3
+
+zonas_seguras:
+  inferior_pct: 8              # barra de progreso
+  inferior_derecha_pct: 18     # badge de duracion

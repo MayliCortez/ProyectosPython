@@ -1,0 +1,17 @@
+.env
+.venv*/
+__pycache__/
+*.pyc
+*.egg-info/
+
+# Trabajo generado: se versiona la estructura, no el contenido.
+salida/*
+!salida/.gitkeep
+data/*
+!data/.gitkeep
+.cache/*
+!.cache/.gitkeep
+
+# El corpus se descarga; las reglas se generan.
+perfiles/*/corpus/*.jsonl
+perfiles/*/corpus/mi_ctr.csv

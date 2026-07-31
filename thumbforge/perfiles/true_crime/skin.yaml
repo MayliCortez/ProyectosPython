@@ -1,0 +1,69 @@
+nombre: "Expediente Cerrado - identidad visual"
+
+lienzo:
+  ancho: 1280
+  alto: 720
+
+paleta:
+  fondo: "#111111"
+  texto: "#ededed"
+  acento: "#8c1c13"
+  sombra: "#000000"
+
+tipografia:
+  titular:
+    archivo: "fonts/LiberationSans-Bold.ttf"
+    tamano_max: 116
+    tamano_min: 54
+    interletrado: 1
+    mayusculas: true
+  secundario:
+    archivo: "fonts/LiberationSans-Regular.ttf"
+    tamano_max: 40
+    tamano_min: 26
+    interletrado: 2
+    mayusculas: true
+
+texto:
+  posicion: "centro"
+  ancho_max_pct: 66
+  interlineado: 1.10
+  color: "#ededed"
+  contorno:
+    grosor: 0
+    color: "#000000"
+  sombra:
+    desplazamiento: [3, 3]
+    desenfoque: 6
+    opacidad: 0.6
+
+# Placa solida en vez de contorno: registro de expediente, no de titular.
+placa:
+  activa: true
+  color: "#0a0a0a"
+  opacidad: 0.62
+  padding: [34, 22]
+
+gradiente:
+  activo: true
+  color: "#000000"
+  opacidad: 0.55
+  direccion: "radial_desde_bordes"
+  alto_pct: 100
+
+barra_acento:
+  activa: true
+  color: "#8c1c13"
+  grosor_px: 6
+  posicion: "bajo_texto"
+
+logo:
+  archivo: "assets/logo.png"
+  posicion: "der_sup"
+  ancho_pct: 11
+  opacidad: 0.85
+  margen_pct: 3
+
+zonas_seguras:
+  inferior_pct: 8
+  inferior_derecha_pct: 18

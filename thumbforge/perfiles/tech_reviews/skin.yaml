@@ -1,0 +1,65 @@
+nombre: "Banco de Pruebas - identidad visual"
+
+lienzo:
+  ancho: 1280
+  alto: 720
+
+paleta:
+  fondo: "#0d1117"
+  texto: "#ffffff"
+  acento: "#31d158"
+  sombra: "#000000"
+
+tipografia:
+  titular:
+    archivo: "fonts/DejaVuSans-Bold.ttf"
+    tamano_max: 140
+    tamano_min: 62
+    interletrado: -3
+    mayusculas: true
+  secundario:
+    archivo: "fonts/DejaVuSansMono-Bold.ttf"
+    tamano_max: 52
+    tamano_min: 30
+    interletrado: 0
+    mayusculas: false
+
+texto:
+  posicion: "izq_sup"
+  ancho_max_pct: 52
+  interlineado: 0.98
+  color: "#ffffff"
+  contorno:
+    grosor: 3
+    color: "#0d1117"
+  sombra:
+    desplazamiento: [0, 6]
+    desenfoque: 14
+    opacidad: 0.45
+
+placa:
+  activa: false
+
+gradiente:
+  activo: true
+  color: "#0d1117"
+  opacidad: 0.60
+  direccion: "izquierda"
+  alto_pct: 100
+
+barra_acento:
+  activa: true
+  color: "#31d158"
+  grosor_px: 10
+  posicion: "sobre_texto"
+
+logo:
+  archivo: "assets/logo.png"
+  posicion: "der_inf"
+  ancho_pct: 10
+  opacidad: 0.9
+  margen_pct: 4
+
+zonas_seguras:
+  inferior_pct: 8
+  inferior_derecha_pct: 18

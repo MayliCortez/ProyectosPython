@@ -1,0 +1,21 @@
+# La imagen contiene SOLO codigo. Todo lo demas entra por volumen.
+.env
+.git
+.gitignore
+.venv*
+**/__pycache__
+**/*.pyc
+**/.pytest_cache
+**/.DS_Store
+
+perfiles/
+data/
+salida/
+.cache/
+
+*.tar
+*.tar.gz
+INSTALAR.md
+pruebas/
+ejemplos/
+README.md
