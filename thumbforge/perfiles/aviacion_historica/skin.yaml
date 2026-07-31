@@ -66,3 +66,38 @@ logo:
 zonas_seguras:
   inferior_pct: 8              # barra de progreso
   inferior_derecha_pct: 18     # badge de duracion
+
+# Preferencias cromaticas. Documentadas en docs/colorimetria.md: toda clave
+# de este bloque es opcional y tiene un defecto en el motor.
+# Registro documental: color contenido, oro contra azul de archivo.
+colorimetria:
+  contraste_minimo: 4.5
+  contraste_objetivo: 8.0
+  armonia_preferida: "complementario"   # el oro es el complemento del azul
+  armonia_ajuste_minimo: 0.55
+  calidez_objetivo: 0.15                # apenas calido: luz de pelicula vieja
+  calidez_tolerancia: 0.45
+  saturacion_maxima: 0.55
+  saturacion_minima: 0.08
+  luminancia_objetivo: 0.22
+  luminancia_tolerancia: 0.18
+  delta_e_minimo_entre_variantes: 10.0
+  colores_texto: ["#f4efe2", "#e8b923"]
+  colores_refuerzo: ["#04101f", "#000000"]
+  refuerzo_preferido: "contorno"
+  max_colores_paleta: 5
+  peso_minimo_paleta: 0.03
+
+# Encuadre. El texto va abajo a la izquierda, asi que el peso visual tiene
+# que estar arriba a la derecha.
+composicion:
+  punto_focal_preferido: "superior_derecho"
+  espacio_negativo_minimo: 0.34
+  detalle_maximo_bajo_texto: 0.28
+  margen_pct: 4
+  desbalance_maximo: 0.45
+  separacion_sujeto_minima: 0.40
+  retencion_desenfoque_minima: 0.40
+  legibilidad_feed_minima: 0.55
+  alto_texto_feed_minimo: 10
+  alinear_a_tercios: true

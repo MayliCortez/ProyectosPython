@@ -67,3 +67,38 @@ logo:
 zonas_seguras:
   inferior_pct: 8
   inferior_derecha_pct: 18
+
+# Registro seco: casi sin color, oscuro, y el rojo solo como marca. El
+# contraste exigido es mayor que el minimo del proyecto porque la placa lo
+# permite sin pelear con la foto.
+colorimetria:
+  contraste_minimo: 5.5
+  contraste_objetivo: 12.0
+  armonia_preferida: "monocromatico"
+  armonia_ajuste_minimo: 0.65
+  calidez_objetivo: -0.35               # frio deliberado
+  calidez_tolerancia: 0.30
+  saturacion_maxima: 0.32
+  saturacion_minima: 0.0
+  luminancia_objetivo: 0.12
+  luminancia_tolerancia: 0.12
+  delta_e_minimo_entre_variantes: 8.0
+  colores_texto: ["#ededed", "#c9c9c9"]
+  colores_refuerzo: ["#0a0a0a", "#000000"]
+  refuerzo_preferido: "placa"
+  max_colores_paleta: 4
+  peso_minimo_paleta: 0.04
+
+# Texto centrado sobre placa: la rejilla de tercios no manda el encuadre y
+# el detalle bajo el texto molesta menos, pero el aire tiene que sobrar.
+composicion:
+  punto_focal_preferido: "superior_izquierdo"
+  espacio_negativo_minimo: 0.45
+  detalle_maximo_bajo_texto: 0.40
+  margen_pct: 6
+  desbalance_maximo: 0.30
+  separacion_sujeto_minima: 0.30
+  retencion_desenfoque_minima: 0.30
+  legibilidad_feed_minima: 0.50
+  alto_texto_feed_minimo: 9
+  alinear_a_tercios: false
