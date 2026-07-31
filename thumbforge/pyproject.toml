@@ -13,6 +13,9 @@ dependencies = [
     "PyYAML==6.0.3",
     "httpx==0.28.1",
     "python-dotenv==1.2.2",
+    # SDK oficial de Anthropic para M2 (vision) y M4 (conceptos). Trae pydantic;
+    # sumadas son unas decenas de MB, lejos del limite de 600 MB de la imagen.
+    "anthropic==0.120.2",
 ]
 
 [project.optional-dependencies]
