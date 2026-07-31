@@ -19,6 +19,15 @@ Este proyecto permite calcular promedios de calificaciones a partir de un archiv
   - `calificaciones.csv`: Archivo CSV que contiene las calificaciones de los estudiantes.
   - `README.md`: Documentación específica del proyecto.
 
+### 3. **n8n-docker**
+Setup completo de **n8n Community Edition** (gratuito) con Docker Compose y PostgreSQL. Permite levantar una instancia local de n8n para crear automatizaciones y workflows.
+
+- **Archivos:**
+  - `docker-compose.yml`: Definición de servicios (n8n + PostgreSQL).
+  - `.env.example`: Plantilla de variables de entorno.
+  - `local-files/`: Carpeta compartida con n8n para leer/escribir archivos.
+  - `README.md`: Instrucciones completas de uso.
+
 ## Requisitos
 
 Para ejecutar estos proyectos, necesitas tener Python instalado en tu sistema. Además, algunos proyectos pueden requerir librerías adicionales que se pueden instalar utilizando `pip`.
