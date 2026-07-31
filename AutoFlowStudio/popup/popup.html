@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="popup.css" />
+    <title>AutoFlow Studio</title>
+  </head>
+  <body>
+    <header class="p-head">
+      <span class="p-logo">⚡</span>
+      <div>
+        <div class="p-title">AutoFlow Studio</div>
+        <div class="p-sub" id="p-version">v1.0.0</div>
+      </div>
+    </header>
+
+    <div class="p-status" id="p-status">Comprobando pestaña…</div>
+
+    <button class="p-btn p-primary" id="p-open">Abrir Google Flow</button>
+    <p class="p-hint">
+      El panel de automatización aparece <b>dentro</b> de la página de un
+      proyecto de Google Flow. Abre un proyecto y busca el panel flotante
+      «⚡ AutoFlow Studio» arriba a la derecha.
+    </p>
+
+    <div class="p-quick">
+      <label class="p-field">
+        <span>Modo por defecto</span>
+        <select id="p-mode">
+          <option value="text_to_video">Texto a Video</option>
+          <option value="frame_to_video">Frame a Video</option>
+          <option value="ingredients_to_video">Ingredientes a Video</option>
+          <option value="text_to_image">Texto a Imagen</option>
+          <option value="image_to_image">Imagen a Imagen</option>
+        </select>
+      </label>
+      <label class="p-field p-check">
+        <input type="checkbox" id="p-autodl" />
+        <span>Auto-descarga</span>
+      </label>
+    </div>
+
+    <footer class="p-foot">
+      Automatiza Veo &amp; Nano Banana en Google Flow.
+    </footer>
+    <script src="../lib/store.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>

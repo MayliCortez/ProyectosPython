@@ -1,0 +1,57 @@
+{
+  "manifest_version": 3,
+  "name": "AutoFlow Studio — Batch Automation for Google Flow",
+  "short_name": "AutoFlow Studio",
+  "version": "1.0.0",
+  "description": "Genera videos e imagenes por lotes en Google Flow (Veo / Nano Banana): cola automatica, reintentos, delays anti rate-limit y auto-descarga.",
+  "default_locale": "es",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "action": {
+    "default_title": "AutoFlow Studio",
+    "default_popup": "popup/popup.html",
+    "default_icon": {
+      "16": "icons/icon16.png",
+      "48": "icons/icon48.png",
+      "128": "icons/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "background/service-worker.js"
+  },
+  "permissions": [
+    "storage",
+    "downloads",
+    "scripting",
+    "activeTab",
+    "debugger"
+  ],
+  "host_permissions": [
+    "https://labs.google/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://labs.google/fx/*/tools/flow/*", "https://labs.google/fx/tools/flow/*"],
+      "js": [
+        "lib/i18n.js",
+        "lib/store.js",
+        "lib/prompt-parser.js",
+        "lib/csv-parser.js",
+        "lib/queue-engine.js",
+        "lib/flow-adapter.js",
+        "content/inject.js"
+      ],
+      "css": ["content/panel.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/*.png"],
+      "matches": ["https://labs.google/*"]
+    }
+  ]
+}

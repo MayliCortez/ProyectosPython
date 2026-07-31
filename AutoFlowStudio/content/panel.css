@@ -1,0 +1,117 @@
+/* AutoFlow Studio — estilos del panel flotante. Todo con prefijo .afs para
+   no colisionar con Google Flow. */
+
+#afs-root.afs {
+  position: fixed;
+  top: 84px;
+  right: 20px;
+  z-index: 2147483647;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  font-size: 13px;
+  border-radius: 14px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.afs-size-small { width: 300px; }
+.afs-size-medium { width: 360px; }
+.afs-size-large { width: 440px; }
+
+/* Temas */
+.afs-theme-dark {
+  --afs-bg: #16181d;
+  --afs-bg2: #1e2128;
+  --afs-fg: #e7e9ee;
+  --afs-muted: #9aa0ac;
+  --afs-border: #2a2e37;
+  --afs-primary: #16d1a1;
+  --afs-primary-fg: #04150f;
+  --afs-danger: #ef5468;
+}
+.afs-theme-light {
+  --afs-bg: #ffffff;
+  --afs-bg2: #f2f4f8;
+  --afs-fg: #1b1e26;
+  --afs-muted: #626879;
+  --afs-border: #e2e6ee;
+  --afs-primary: #0fae86;
+  --afs-primary-fg: #ffffff;
+  --afs-danger: #d63a4e;
+}
+
+#afs-root.afs { background: var(--afs-bg); color: var(--afs-fg); }
+
+.afs-header {
+  display: flex; align-items: center; gap: 6px;
+  padding: 10px 12px; cursor: move;
+  background: linear-gradient(180deg, var(--afs-bg2), var(--afs-bg));
+  border-bottom: 1px solid var(--afs-border);
+}
+.afs-title { font-weight: 700; letter-spacing: .2px; }
+.afs-spacer { flex: 1; }
+.afs-icon-btn {
+  background: transparent; border: none; color: var(--afs-muted);
+  cursor: pointer; font-size: 14px; padding: 2px 6px; border-radius: 6px;
+}
+.afs-icon-btn:hover { background: var(--afs-border); color: var(--afs-fg); }
+
+.afs-body { padding: 12px; display: flex; flex-direction: column; gap: 10px; max-height: 72vh; overflow-y: auto; }
+.afs-collapsed .afs-body { display: none; }
+
+.afs-tabs { display: flex; flex-wrap: wrap; gap: 6px; }
+.afs-tab {
+  flex: 1 1 auto; min-width: 84px; padding: 6px 8px; font-size: 11.5px;
+  border: 1px solid var(--afs-border); background: var(--afs-bg2);
+  color: var(--afs-muted); border-radius: 8px; cursor: pointer;
+}
+.afs-tab.afs-active { background: var(--afs-primary); color: var(--afs-primary-fg); border-color: transparent; font-weight: 600; }
+
+.afs-textarea {
+  width: 100%; box-sizing: border-box; resize: vertical; min-height: 96px;
+  background: var(--afs-bg2); color: var(--afs-fg); border: 1px solid var(--afs-border);
+  border-radius: 10px; padding: 10px; font-family: inherit; font-size: 12.5px; line-height: 1.4;
+}
+.afs-textarea:focus { outline: none; border-color: var(--afs-primary); }
+
+.afs-row, .afs-controls { display: flex; gap: 8px; flex-wrap: wrap; }
+.afs-btn {
+  flex: 1 1 auto; padding: 8px 10px; border-radius: 9px; cursor: pointer;
+  border: 1px solid var(--afs-border); background: var(--afs-bg2); color: var(--afs-fg);
+  font-size: 12.5px; font-weight: 600;
+}
+.afs-btn:hover { filter: brightness(1.08); }
+.afs-primary { background: var(--afs-primary); color: var(--afs-primary-fg); border-color: transparent; }
+.afs-danger { background: transparent; color: var(--afs-danger); border-color: var(--afs-danger); }
+.afs-ghost { background: transparent; }
+
+.afs-settings { background: var(--afs-bg2); border: 1px solid var(--afs-border); border-radius: 10px; padding: 4px 10px; }
+.afs-settings summary { cursor: pointer; padding: 6px 0; font-weight: 600; }
+.afs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 8px 0; }
+.afs-field { display: flex; flex-direction: column; gap: 3px; font-size: 11px; color: var(--afs-muted); }
+.afs-field.afs-check { flex-direction: row; align-items: center; gap: 6px; }
+.afs-input { background: var(--afs-bg); color: var(--afs-fg); border: 1px solid var(--afs-border); border-radius: 7px; padding: 5px 6px; font-size: 12px; }
+
+.afs-section-head { display: flex; justify-content: space-between; align-items: center; font-weight: 700; margin-top: 2px; }
+.afs-counts { font-size: 11px; color: var(--afs-muted); font-weight: 500; }
+.afs-queue { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
+.afs-empty { color: var(--afs-muted); text-align: center; padding: 14px; font-style: italic; }
+
+.afs-item { display: flex; align-items: center; gap: 8px; background: var(--afs-bg2); border: 1px solid var(--afs-border); border-radius: 8px; padding: 6px 8px; }
+.afs-item-text { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 12px; }
+.afs-attempts { color: var(--afs-danger); font-size: 11px; }
+.afs-x { background: transparent; border: none; color: var(--afs-muted); cursor: pointer; }
+.afs-x:hover { color: var(--afs-danger); }
+
+.afs-chip { font-size: 10px; padding: 2px 7px; border-radius: 999px; font-weight: 700; white-space: nowrap; }
+.afs-queued { background: #3a3f4b; color: #cdd2dd; }
+.afs-generating { background: #2b4b8f; color: #cfe0ff; }
+.afs-downloading { background: #7a5b16; color: #ffe9b3; }
+.afs-completed { background: #14603f; color: #b6f5d8; }
+.afs-failed { background: #6e2230; color: #ffc4cd; }
+.afs-skipped { background: #4a4a4a; color: #d0d0d0; }
+
+.afs-log { background: #0c0e12; color: #8ee6c4; border: 1px solid var(--afs-border); border-radius: 8px; padding: 8px; height: 92px; overflow-y: auto; font-family: ui-monospace, "Cascadia Code", monospace; font-size: 10.5px; line-height: 1.45; }
+.afs-theme-light .afs-log { background: #0c0e12; }
+.afs-log-line { white-space: pre-wrap; word-break: break-word; }
