@@ -23,7 +23,11 @@ ARG BASE_IMAGEN=python:3.12-slim@sha256:57cd7c3a7a273101a6485ba99423ee5681578828
 # ---------------------------------------------------------------------------
 FROM ${BASE_IMAGEN} AS builder
 
-ENV PYTHONDONTWRITEBYTECODE=1
+# Aca a proposito NO se define PYTHONDONTWRITEBYTECODE: se quiere que pip deje
+# el bytecode precompilado dentro del venv. En la imagen final el venv es de
+# solo lectura para el proceso, asi que sin .pyc cada arranque de la CLI
+# recompilaria. La variable si se define en la etapa final, que es donde
+# importa: que nadie escriba .pyc en tiempo de ejecucion.
 ENV PYTHONUNBUFFERED=1
 ENV PIP_NO_CACHE_DIR=1
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1
