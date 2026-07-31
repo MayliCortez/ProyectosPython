@@ -7,7 +7,14 @@
 # Uso normal (la CLI es de un solo disparo, no un servicio que queda prendido):
 #   docker compose run --rm app thumbforge doctor
 #   docker compose run --rm app thumbforge perfiles --detalle
-#   docker compose run --rm app thumbforge politica --perfil tc --concepto ejemplos/conceptos_true_crime.json
+#
+# Para evaluar un concepto propio: el archivo tiene que estar dentro de uno de
+# los cuatro volumenes, porque son lo unico que el contenedor ve del host.
+# ejemplos/ vive en el repo pero NO entra a la imagen (esta en .dockerignore),
+# asi que se copia primero:
+#
+#   cp ejemplos/conceptos_true_crime.json data/
+#   docker compose run --rm app thumbforge politica --perfil tc --concepto data/conceptos_true_crime.json
 
 # Todo lo compartido entre servicios vive en este anclaje: un solo lugar donde
 # cambiar los volumenes o el mapeo de usuario.
