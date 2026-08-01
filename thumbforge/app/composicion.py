@@ -466,6 +466,28 @@ class Legibilidad:
         return self.puntaje >= self.minimo and not self.motivos
 
 
+def anillo_mascara(mascara: Image.Image, radio: int = 4,
+                   interior: int = 2) -> Image.Image:
+    """La franja de fondo que rodea al trazo, sin el trazo ni su antialias.
+
+    Es contra esto que hay que medir el contraste de un texto YA dibujado.
+    Muestrear la imagen final bajo la mascara del texto devuelve el color del
+    propio texto y da 1.00:1 -el texto comparado consigo mismo-, que parece
+    un fallo catastrofico de contraste y en realidad es un error de medicion.
+
+    `interior` descarta los primeros pixeles alrededor del trazo, que estan
+    mezclados por el suavizado de bordes: son mitad texto y mitad fondo, y
+    contra ellos cualquier texto mide pesimo sin que eso signifique nada
+    sobre su legibilidad. Lo que interesa empieza pasada esa franja.
+
+    El anillo ademas contempla lo que el ojo realmente ve: si hay contorno o
+    placa, es eso lo que rodea a la letra, y es eso lo que la hace legible.
+    """
+    externo = mascara.filter(ImageFilter.MaxFilter(max(3, radio * 2 + 1)))
+    interno = mascara.filter(ImageFilter.MaxFilter(max(3, interior * 2 + 1)))
+    return ImageChops.subtract(externo, interno)
+
+
 def legibilidad_en_feed(imagen: Image.Image, mascara_texto: Image.Image | None = None,
                         color_texto=None, tamano: tuple = TAMANO_FEED,
                         minimo: float = 0.55, contraste_minimo: float = 4.5,
@@ -506,13 +528,22 @@ def legibilidad_en_feed(imagen: Image.Image, mascara_texto: Image.Image | None =
         solidez = min(1.0, solidos_chicos / esperado) if esperado > 0 else 0.0
 
         if color_texto is not None:
-            informe = col.contraste_sobre_fondo(color_texto, chica, msk_chica,
+            # Contra el anillo que rodea al trazo, no contra el trazo mismo:
+            # `imagen` ya trae el texto dibujado encima.
+            anillo = anillo_mascara(msk_chica, 2, 1)
+            informe = col.contraste_sobre_fondo(color_texto, chica, anillo,
                                                 contraste_minimo)
-            contraste_texto = informe.peor
-            if not informe.cumple:
+            if informe.muestras == 0:  # trazo tan fino que no dejo anillo
+                informe = col.contraste_sobre_fondo(color_texto, chica, msk_chica,
+                                                    contraste_minimo)
+            # Percentil 5 y no el pixel peor: a este tamano casi todo el
+            # borde es antialias, y el minimo absoluto no seria medible.
+            contraste_texto = informe.percentil_5
+            if informe.muestras and informe.percentil_5 < contraste_minimo:
                 motivos.append(
-                    f"a {tamano[0]}x{tamano[1]} el texto cae a {informe.peor:.2f}:1 "
-                    f"contra su fondo (minimo {contraste_minimo:.1f}:1)")
+                    f"a {tamano[0]}x{tamano[1]} el texto cae a "
+                    f"{informe.percentil_5:.2f}:1 contra su fondo "
+                    f"(minimo {contraste_minimo:.1f}:1)")
         if alto_texto < alto_texto_minimo:
             motivos.append(
                 f"el bloque de texto mide {alto_texto:.1f} px en el feed, menos de "
