@@ -104,6 +104,76 @@ def cmd_politica(args: argparse.Namespace) -> int:
     return 0 if all(v.ok for v in veredictos) else 1
 
 
+def cmd_corpus(args: argparse.Namespace) -> int:
+    """Descarga y anota el corpus del perfil.
+
+    Dos pasos en un solo comando porque ese es el orden natural: se
+    recolectan los videos y despues se anotan las miniaturas. `--refrescar`
+    pisa la cache, `--limite` acota para probar rapido.
+    """
+    from .cache import Cache
+    from .modulos import anotador, recolector
+
+    perfil = mod_perfiles.cargar_perfil(args.perfil)
+    cache = Cache()
+
+    try:
+        r = recolector.recolectar(perfil, cache, refrescar=args.refrescar,
+                                   limite=args.limite)
+    except ErrorThumbforge as exc:
+        print(f"M1: {exc}", file=sys.stderr)
+        return 2
+    print(tabla.titulo("M1 recolector"))
+    print(f"videos: {r.escritos} escritos, {r.ids_encontrados} encontrados, "
+          f"{r.descartados_shorts} shorts, {r.descartados_recientes} recientes, "
+          f"{r.llamadas_red} llamadas de red, {r.fuentes} fuentes")
+    print(f"archivo: {r.archivo}")
+    for a in (r.avisos or [])[:5]:
+        print(f"  aviso: {a}")
+
+    if args.solo == "recolectar":
+        return 0
+
+    try:
+        a = anotador.anotar(perfil, cache, refrescar=args.refrescar,
+                            limite=args.limite)
+    except ErrorThumbforge as exc:
+        print(f"M2: {exc}", file=sys.stderr)
+        return 2
+    print(tabla.titulo("M2 anotador"))
+    print(f"anotaciones: {a.anotados} anotadas, {a.reutilizados} reusadas, "
+          f"{a.desde_cache} desde cache, {a.fallidos} con error, "
+          f"{a.sin_miniatura} sin miniatura, {a.llamadas_red} llamadas de red")
+    print(f"archivo: {a.archivo}")
+    return 0
+
+
+def cmd_reglas(args: argparse.Namespace) -> int:
+    """Genera perfiles/<slug>/corpus/reglas.md a partir del corpus anotado."""
+    from .modulos import patrones
+
+    perfil = mod_perfiles.cargar_perfil(args.perfil)
+    try:
+        informe = patrones.analizar(perfil)
+    except ErrorThumbforge as exc:
+        print(f"M3: {exc}", file=sys.stderr)
+        return 2
+    ruta = patrones.escribir_reglas(informe)
+    print(f"reglas escritas: {ruta}")
+
+    reglas = informe.reglas_activas()
+    corpus = len(informe.corpus.reglas) if informe.corpus else 0
+    ctr = len(informe.ctr.reglas) if informe.ctr else 0
+    print(f"{len(reglas)} regla(s) activa(s): {ctr} del CTR propio, "
+          f"{corpus} del corpus ajeno.")
+    if informe.conflictos:
+        print(f"{len(informe.conflictos)} conflicto(s) entre las dos fuentes: "
+              f"revisa la seccion de conflictos en {ruta.name}.")
+    for aviso in (informe.avisos or [])[:5]:
+        print(f"  aviso: {aviso}")
+    return 0
+
+
 def cmd_run(args: argparse.Namespace) -> int:
     """Guion -> 3 miniaturas + QA.
 
@@ -119,14 +189,39 @@ def cmd_run(args: argparse.Namespace) -> int:
     cache = Cache()
     salida = rutas.dir_salida()
 
+    if args.conceptos and args.guion:
+        print("Elegi uno: --conceptos (brief ya hecho, sin llamadas al modelo) "
+              "o --guion (arma el brief con M4, necesita clave de LLM).",
+              file=sys.stderr)
+        return 2
+
     if args.conceptos:
         datos = json.loads(Path(args.conceptos).read_text("utf-8"))
         conceptos = datos if isinstance(datos, list) else datos.get("conceptos", [datos])
+    elif args.guion:
+        from .modulos import brief as mod_brief
+        try:
+            guion_texto = Path(args.guion).read_text("utf-8")
+        except OSError as exc:
+            print(f"No pude leer {args.guion}: {exc}", file=sys.stderr)
+            return 2
+        try:
+            resultado = mod_brief.generar_conceptos(
+                perfil, guion_texto, cache,
+                titulo=args.titulo, nombre_guion=Path(args.guion).name)
+        except ErrorThumbforge as exc:
+            print(f"M4: {exc}", file=sys.stderr)
+            return 2
+        conceptos = resultado.conceptos
+        for a in getattr(resultado, "avisos", []) or []:
+            print(f"M4: {a}")
+        for r in getattr(resultado, "rechazados", []) or []:
+            cid = r.get("id") if isinstance(r, dict) else getattr(r, "concepto_id", "?")
+            print(f"M4 descarto {cid}: {r}")
     else:
-        print("Todavia falta cablear M4 a la CLI: por ahora pasale un brief ya "
-              "hecho con --conceptos, y opcionalmente una base con --imagen.",
-              file=sys.stderr)
-        return 3
+        print("Necesito --guion (con clave de LLM) o --conceptos (brief ya hecho). "
+              "Sin uno de los dos no hay que renderizar.", file=sys.stderr)
+        return 2
 
     imagenes = [Path(p) for p in (args.imagen or [])]
     if imagenes and len(imagenes) not in (1, len(conceptos)):
@@ -235,16 +330,23 @@ def construir_parser() -> argparse.ArgumentParser:
     r.add_argument("--imagen", action="append",
                    help="Base visual local. Una sola para todos los conceptos, "
                         "o repetir el flag una vez por concepto")
+    r.add_argument("--titulo", help="Titulo del video, para el control "
+                                     "no_duplicar_titulo del perfil (usar con --guion)")
     r.set_defaults(func=cmd_run)
 
     c = sub.add_parser("corpus", help="Recolecta y anota el corpus del perfil")
     c.add_argument("--perfil", required=True)
-    c.add_argument("--refrescar", action="store_true")
-    c.set_defaults(func=_pendiente(4, "corpus"))
+    c.add_argument("--refrescar", action="store_true",
+                   help="Ignora la cache y vuelve a pedir todo")
+    c.add_argument("--limite", type=int,
+                   help="Acota los videos a los N de mayor outlier_score")
+    c.add_argument("--solo", choices=["recolectar", "anotar"], default=None,
+                   help="Corre solo uno de los dos pasos")
+    c.set_defaults(func=cmd_corpus)
 
     g = sub.add_parser("reglas", help="Genera corpus/reglas.md a partir del corpus")
     g.add_argument("--perfil", required=True)
-    g.set_defaults(func=_pendiente(5, "reglas"))
+    g.set_defaults(func=cmd_reglas)
 
     return p
 

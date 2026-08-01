@@ -15,9 +15,17 @@ recorre `app/` buscando nombres de nicho y falla si encuentra alguno.
 
 ## Estado
 
-Construido: **paso 1** del orden de construccion — esqueleto, sistema de
-perfiles y `thumbforge doctor`. Los modulos M1..M6 llegan en los pasos
-siguientes; `run`, `corpus` y `reglas` responden indicando en que paso llegan.
+Los seis modulos (M1..M6), el resolvedor automatico de base visual y los
+tres comandos principales (`run`, `corpus`, `reglas`) estan cableados. El
+motor produce miniaturas reales, con foto real y licencia real, contra
+Openverse y Wikimedia Commons, sin ninguna clave de API. Con clave de LLM
+tambien anda `run --guion` de punta a punta.
+
+Para instalar en otra maquina: [INSTALAR.md](INSTALAR.md).
+
+Falta: la interfaz web opcional (`compose --profile web up`) y la
+verificacion del build multi-arch, que necesita un daemon de Docker que
+esta ausente del entorno de desarrollo.
 
 ## Estructura
 
@@ -75,11 +83,21 @@ Pillow pueda abrirla.
 ## Uso
 
 ```bash
+# Diagnostico y descubrimiento
 thumbforge doctor                       # diagnostico completo, con llamadas de prueba
 thumbforge doctor --sin-red             # sin tocar la red
 thumbforge doctor --quiet               # solo codigo de salida (lo usa el healthcheck)
 thumbforge perfiles --detalle           # perfiles disponibles y su politica completa
 thumbforge politica --perfil tc --concepto ejemplos/conceptos_true_crime.json
+
+# Renderizado
+thumbforge run --perfil cocina --conceptos brief.json        # sin claves, base auto de Openverse
+thumbforge run --perfil cocina --conceptos brief.json --imagen foto.jpg  # con imagen propia
+thumbforge run --perfil cocina --guion guion.md              # necesita clave de LLM (M4)
+
+# Corpus y reglas
+thumbforge corpus --perfil gdc --limite 60   # necesita YOUTUBE_API_KEY + ANTHROPIC/OPENAI
+thumbforge reglas --perfil gdc               # no toca la red: cruza lo ya anotado
 ```
 
 Sin instalar el paquete: `python -m app.cli ...` desde este directorio.
