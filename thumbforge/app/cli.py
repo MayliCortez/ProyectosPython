@@ -261,6 +261,9 @@ def cmd_run(args: argparse.Namespace) -> int:
     ruta_brief = salida / f"{perfil.slug}_brief.json"
     ruta_brief.write_text(json.dumps(conceptos, ensure_ascii=False, indent=2), "utf-8")
 
+    from .modulos import panel as mod_panel
+    ruta_panel = mod_panel.construir(informe, resultados, salida / "panel.html")
+
     print(tabla.titulo("QA"))
     filas = [[v.concepto_id, tabla.OK if v.ok else tabla.ERROR,
               f"{v.contraste_p5:.2f}:1", f"{v.legibilidad.puntaje:.2f}",
@@ -277,8 +280,9 @@ def cmd_run(args: argparse.Namespace) -> int:
     print(f"\nEn {salida}:")
     for r in resultados:
         print(f"  {r.ruta.name}")
-    for p in (ruta_brief, ruta_qa, ruta_creditos):
+    for p in (ruta_brief, ruta_qa, ruta_creditos, ruta_panel):
         print(f"  {p.name}")
+    print(f"\nAbri el panel en tu navegador: file://{ruta_panel.resolve()}")
 
     if informe.a_reemplazar():
         print(f"\nM4 tiene que reemplazar: {', '.join(informe.a_reemplazar())}")

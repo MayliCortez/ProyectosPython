@@ -23,6 +23,7 @@ from pathlib import Path
 
 from PIL import Image
 
+from .. import aptitud as apt
 from .. import color as col
 from .. import composicion as comp
 from ..perfiles import Perfil
@@ -45,6 +46,11 @@ class InformeVariante:
     composicion: dict
     bytes: int
     hallazgos: list = field(default_factory=list)
+    # Aptitud para el feed: score compuesto derivado de factores que la
+    # evidencia sostiene (rostro con emocion, palabras cortas, contraste,
+    # legibilidad a 210x118, armonia del skin). NO es CTR predicho: sin
+    # datos propios del canal nadie predice CTR. Se muestra desglosado.
+    aptitud: apt.Aptitud | None = None
 
     @property
     def ok(self) -> bool:
@@ -92,7 +98,9 @@ class InformeQA:
 def revisar_variante(imagen: Image.Image, concepto_id: str, ruta: Path,
                      perfil: Perfil, mascara_texto: Image.Image | None = None,
                      color_texto: str | None = None,
-                     bytes_: int = 0) -> InformeVariante:
+                     bytes_: int = 0,
+                     palabras_texto: int | None = None,
+                     anotacion: dict | None = None) -> InformeVariante:
     pol_color = col.politica_color(perfil)
     pol_comp = comp.politica_composicion(perfil)
     minimo = pol_color.contraste_minimo
@@ -145,13 +153,23 @@ def revisar_variante(imagen: Image.Image, concepto_id: str, ruta: Path,
     hallazgos.extend(h for h in evaluacion["hallazgos"]
                      if "legibilidad" not in h and "desenfoque" not in h)
 
+    # Aptitud para el feed. La anotacion (M2) es opcional: si no llega, los
+    # componentes que dependen de ella no se calculan y se dice en el motivo.
+    an = anotacion or {}
+    aptitud = apt.puntuar(
+        imagen, perfil,
+        mascara_texto=mascara_texto, color_texto=color_texto,
+        palabras_texto=palabras_texto,
+        emocion=an.get("emocion"), hay_rostro=an.get("rostro_humano"),
+        mirada=an.get("mirada"))
+
     return InformeVariante(
         concepto_id=concepto_id, ruta=ruta,
         contraste_peor=informe.peor, contraste_p5=informe.percentil_5,
         contraste_promedio=informe.promedio,
         contraste_fraccion_ok=informe.fraccion_ok, contraste_minimo=minimo,
         legibilidad=legibilidad, desenfoque=desenfoque, composicion=evaluacion,
-        bytes=bytes_, hallazgos=hallazgos)
+        bytes=bytes_, hallazgos=hallazgos, aptitud=aptitud)
 
 
 # --- distancia entre variantes -----------------------------------------------
@@ -207,11 +225,15 @@ def revisar(resultados: list, perfil: Perfil) -> InformeQA:
     for r in resultados:
         imagen = r.imagen if r.imagen is not None else Image.open(r.ruta).convert("RGB")
         imagenes[r.concepto_id] = imagen
+        palabras = len((r.bloque.lineas or []) and " ".join(r.bloque.lineas).split()) \
+            if getattr(r, "bloque", None) else None
         informe.variantes.append(revisar_variante(
             imagen, r.concepto_id, r.ruta, perfil,
             mascara_texto=r.mascara_texto,
             color_texto=r.decision_texto.color if r.decision_texto else None,
-            bytes_=r.bytes))
+            bytes_=r.bytes,
+            palabras_texto=palabras,
+            anotacion=getattr(r, "anotacion", None)))
 
     ids = list(imagenes)
     for i, id_a in enumerate(ids):
@@ -264,9 +286,34 @@ def render_markdown(informe: InformeQA) -> str:
         if v.hallazgos:
             lineas.append("- hallazgos:")
             lineas.extend(f"  - {h}" for h in v.hallazgos)
+        if v.aptitud and v.aptitud.componentes:
+            lineas.append(
+                f"- **aptitud para el feed: {v.aptitud.puntaje:.0f}/100**  "
+                f"(no es CTR predicho; sin datos propios nadie predice CTR)")
+            for c in v.aptitud.componentes:
+                lineas.append(
+                    f"  - {c.nombre}: {c.puntaje * 100:.0f}/100  "
+                    f"(peso {c.peso:.0%}) - {c.motivo}")
         lineas.append("")
 
-    lineas += ["## Distancia entre variantes", "",
+    lineas += ["## Aptitud para el feed - por que este score",
+               "",
+               "El puntaje resume que tan bien chequea cada variante contra los "
+               "factores que la evidencia externa cross-referenciada sostiene: "
+               "rostros con emocion legible, textos cortos (<4 palabras), "
+               "contraste alto (Vidooly y otros: ~30% mas de CTR), y sobre todo "
+               "legibilidad al tamano real del feed movil, que es donde ocurren "
+               "el 70%+ de las decisiones de click.",
+               "",
+               "**Lo que este numero NO es**: no es CTR predicho. Sin datos "
+               "propios del canal -export de YouTube Studio Modo Avanzado a "
+               "`corpus/mi_ctr.csv`- nadie predice CTR real de una miniatura. "
+               "Cualquier herramienta que diga hacerlo esta vendiendo humo. Con "
+               "esos datos M3 saca reglas propias y M4 las cita en cada concepto; "
+               "M6 usa ese puntaje solo como comparador entre las variantes de "
+               "esta misma corrida y como red de deteccion de miniaturas flojas.",
+               "",
+               "## Distancia entre variantes", "",
                "Tres opciones que se parecen no son tres opciones. Se compara "
                "histograma, composicion y paleta a la vez: cada medida por "
                "separado se engana facil.", "",
