@@ -261,8 +261,16 @@ class Balance:
     lado: str            # izquierda | derecha | arriba | abajo | equilibrada
 
 
-def centro_de_masa(mapa: MapaDetalle) -> tuple:
-    """Centro de masa del detalle, en coordenadas absolutas de la imagen."""
+def centro_de_masa(mapa: MapaDetalle, caja_texto: Caja | None = None,
+                   peso_texto: float = 1.0) -> tuple:
+    """Centro de masa del detalle, en coordenadas absolutas de la imagen.
+
+    Si se pasa la caja del texto, su masa entra en la cuenta. No es un
+    detalle: en la miniatura terminada el bloque de texto es uno de los
+    elementos mas pesados que hay, y medir el equilibrio solo sobre el fondo
+    da por desbalanceado el encuadre mas comun y mas eficaz que existe -el
+    sujeto de un lado y el texto del otro-, que en realidad se compensa.
+    """
     cw = mapa.ancho / float(mapa.columnas)
     ch = mapa.alto / float(mapa.filas)
     sx = sy = peso = 0.0
@@ -272,13 +280,25 @@ def centro_de_masa(mapa: MapaDetalle) -> tuple:
             sx += v * (c + 0.5) * cw
             sy += v * (f + 0.5) * ch
             peso += v
+
+    if caja_texto is not None and peso_texto > 0:
+        # El texto se cuenta como detalle pleno sobre el area que ocupa,
+        # escalado al tamano de celda para que sea comparable con el mapa.
+        celdas_texto = (caja_texto.ancho * caja_texto.alto) / float(cw * ch)
+        masa = celdas_texto * peso_texto
+        tcx, tcy = caja_texto.centro
+        sx += masa * tcx
+        sy += masa * tcy
+        peso += masa
+
     if peso <= 0:
         return (mapa.ancho / 2.0, mapa.alto / 2.0)
     return (sx / peso, sy / peso)
 
 
-def balance(mapa: MapaDetalle, umbral: float = 0.35) -> Balance:
-    cx, cy = centro_de_masa(mapa)
+def balance(mapa: MapaDetalle, umbral: float = 0.35,
+            caja_texto: Caja | None = None, peso_texto: float = 1.0) -> Balance:
+    cx, cy = centro_de_masa(mapa, caja_texto, peso_texto)
     dx = (cx / mapa.ancho - 0.5) * 2
     dy = (cy / mapa.alto - 0.5) * 2
     lado = "equilibrada"
@@ -530,9 +550,17 @@ class EleccionCaja:
     zonas_invadidas: list = field(default_factory=list)
 
 
-def _anclas(ancho: int, alto: int, w: int, h: int, margen: int) -> dict:
+def _anclas(ancho: int, alto: int, w: int, h: int, margen: int,
+            margen_inferior: int | None = None) -> dict:
+    """Las nueve anclas clasicas.
+
+    `margen_inferior` va aparte porque la franja de la barra de progreso se
+    mide sobre el alto y el margen general sobre el ancho: con un solo valor,
+    las anclas de abajo caen dentro de la zona segura y se descartan siempre.
+    """
+    mi = margen if margen_inferior is None else margen_inferior
     xs = {"izq": margen, "centro": int((ancho - w) / 2), "der": ancho - w - margen}
-    ys = {"sup": margen, "centro": int((alto - h) / 2), "inf": alto - h - margen}
+    ys = {"sup": margen, "centro": int((alto - h) / 2), "inf": alto - h - mi}
     salida = {}
     for cx, x in xs.items():
         for cy, y in ys.items():
@@ -580,7 +608,14 @@ def elegir_caja_texto(imagen: Image.Image, tamano: tuple,
     if ancho_max_pct is not None:
         limite = int(round(ancho * _fraccion(ancho_max_pct, 1.0)))
 
-    candidatas_geo = _anclas(ancho, alto, w, h, margen)
+    # Las anclas de abajo tienen que quedar POR ENCIMA de la barra de
+    # progreso. Con el margen general (un porcentaje del ancho) una caja
+    # anclada abajo cae dentro de la franja inferior (un porcentaje del alto)
+    # y se descarta: la posicion 'inf' que pide el skin quedaba inalcanzable
+    # y el texto terminaba en otro lado sin que nadie se enterara.
+    alto_barra = max((z.alto for n, z in zonas.items() if "barra" in n), default=0)
+    margen_inferior = max(margen, alto_barra + max(4, int(alto * 0.01)))
+    candidatas_geo = _anclas(ancho, alto, w, h, margen, margen_inferior)
     if alinear_a_tercios:
         for nombre in PUNTOS_FUERTES:
             px, py = rejilla.punto(nombre)
@@ -770,7 +805,20 @@ def evaluar_composicion(imagen: Image.Image,
     ancho, alto = imagen.size
     m = mapa_detalle(imagen)
     zonas = zonas_seguras(ancho, alto, pol.zona_inferior_pct, pol.zona_inferior_derecha_pct)
-    bal = balance(m, pol.desbalance_maximo)
+
+    # El equilibrio se mide con el texto adentro. Si no llego la caja pero si
+    # la mascara, se deduce de sus limites: lo que importa es que la masa del
+    # texto entre en la cuenta, no como se la paso quien llama.
+    caja_peso = caja_texto
+    if caja_peso is None and mascara_texto is not None:
+        limites = mascara_texto.getbbox()
+        if limites:
+            mx, my = mascara_texto.size
+            ex, ey = ancho / float(mx), alto / float(my)
+            x0, y0, x1, y1 = limites
+            caja_peso = Caja(int(x0 * ex), int(y0 * ey),
+                             int((x1 - x0) * ex), int((y1 - y0) * ey))
+    bal = balance(m, pol.desbalance_maximo, caja_peso)
     negativo = espacio_negativo(m)
     separacion = separacion_sujeto_fondo(imagen, m, minimo=pol.separacion_sujeto_minima)
     desenfoque = prueba_desenfoque(imagen, minimo=pol.retencion_desenfoque_minima)

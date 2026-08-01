@@ -350,9 +350,9 @@ CABECERA_ES = ("Contenido;Titulo del video;Impresiones;"
 
 def test_ctr_con_bom_punto_y_coma_y_coma_decimal(tmp_path):
     ruta = tmp_path / "mi_ctr.csv"
-    # ﻿ es el BOM que deja el export bajado desde Windows.
+    # \ufeff es el BOM que deja el export bajado desde Windows.
     ruta.write_bytes(
-        ("﻿" + CABECERA_ES + "\n"
+        ("\ufeff" + CABECERA_ES + "\n"
          "Total;;12.000;4,8;900\n"
          "aaaaaaaaaaa;Uno;5.000;6,4;300\n"
          "bbbbbbbbbbb;Dos;7.000;3,25;600\n").encode("utf-8")
