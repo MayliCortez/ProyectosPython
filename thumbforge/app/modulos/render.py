@@ -144,14 +144,22 @@ def resolver_base(concepto: dict, perfil: Perfil, cache: Cache,
                          licencia=str(base.get("licencia") or "sin declarar"))
         return Image.open(ruta), [atr]
 
-    # Sin imagen local hace falta una fuente externa. Se falla con un mensaje
-    # que dice exactamente que falta, en vez de devolver un cuadro vacio.
-    raise ErrorRender(
-        f"El concepto '{cid}' pide una base de origen '{origen}' y no se paso "
-        f"ninguna imagen local. La resolucion automatica de archivo y la "
-        f"generacion por API todavia no estan cableadas: pasale una imagen con "
-        f"--imagen o completa base_visual.archivo_local en el concepto."
-    )
+    # Sin imagen local, se busca en las fuentes con licencia. El resolvedor
+    # respeta las prohibiciones del perfil (el origen 'generada' no lo maneja
+    # este camino) y falla explicito si no hay nada aceptable.
+    if origen == "generada":
+        raise ErrorRender(
+            f"El concepto '{cid}' pide una base generada por IA. La generacion "
+            f"por API todavia no esta cableada: pasale una imagen con --imagen "
+            f"o cambia base_visual.origen a 'foto_archivo'.")
+
+    from . import fuentes
+    imagen, elegido, _ = fuentes.resolver(concepto, perfil, cache)
+    atr = Atribucion(cid, origen or "foto_archivo", base.get("descripcion", ""),
+                     fuente=elegido.proveedor, licencia=elegido.licencia_legible,
+                     autor=elegido.autor or "sin declarar",
+                     url=elegido.url_origen or elegido.url)
+    return imagen, [atr]
 
 
 # --- texto -------------------------------------------------------------------
@@ -388,7 +396,16 @@ def componer(concepto: dict, perfil: Perfil, base: Image.Image,
         mascara=mascara)
 
     # --- placa ---------------------------------------------------------------
-    quiere_placa = bool(cfg_placa.get("activa")) or decision.necesita_placa
+    # La decision automatica pide placa cuando el fondo es demasiado
+    # complicado para que un contorno alcance. Pero si el skin dijo
+    # 'refuerzo_preferido: contorno', hay que respetarlo: la placa se
+    # activa solo cuando el skin la declara explicitamente. La preferencia
+    # 'placa' hace el camino inverso: activa aunque la decision no la pida.
+    quiere_placa = bool(cfg_placa.get("activa"))
+    if pol_color.refuerzo_preferido == "placa":
+        quiere_placa = True
+    elif pol_color.refuerzo_preferido == "auto":
+        quiere_placa = quiere_placa or decision.necesita_placa
     if quiere_placa:
         capa = Image.new("RGBA", (ancho, alto), (0, 0, 0, 0))
         ImageDraw.Draw(capa).rectangle(

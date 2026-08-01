@@ -127,12 +127,49 @@ def test_el_render_rechaza_un_concepto_que_viola_la_politica(tmp_path, base_png)
     assert "derecho de imagen" in mensaje
 
 
-def test_sin_imagen_local_dice_que_falta(tmp_path, concepto):
-    perfil = mod_perfiles.cargar_perfil("gdc")
+def test_sin_imagen_local_para_origen_generada_dice_que_falta(tmp_path):
+    """Un concepto con origen 'generada' permitido por el perfil, sin
+    imagen local: M5 tiene que explicar que la generacion por IA todavia
+    no esta cableada. Se construye a mano un concepto en el que 'generada'
+    esta admitida para la categoria elegida."""
+    perfil = mod_perfiles.cargar_perfil("tech")
+    concepto = {
+        "id": "gen-1",
+        "copy": {"texto": "Prueba", "producto": "Prueba"},
+        # 'fondo_abstracto' esta en generacion_ia_permitida_para de tech.
+        "base_visual": {"origen": "generada", "categoria": "fondo_abstracto",
+                        "descripcion": "gradiente diagonal"},
+    }
     with pytest.raises(render.ErrorRender) as exc:
         render.renderizar(concepto, perfil, Cache(tmp_path / "c"),
                           salida=tmp_path / "salida")
+    assert "generada por IA" in str(exc.value)
     assert "--imagen" in str(exc.value)
+
+
+def test_sin_imagen_local_para_foto_archivo_intenta_resolver(monkeypatch, tmp_path,
+                                                              base_png, concepto):
+    """Sin --imagen y con origen 'foto_archivo', M5 delega en el resolvedor
+    de fuentes. Se lo monkeypatchea con una imagen real, para no salir a la
+    red en pruebas."""
+    from app.modulos import fuentes
+    from PIL import Image as _Img
+
+    perfil = mod_perfiles.cargar_perfil("gdc")
+
+    def resolver_falso(_c, _p, _cache, examinar=5):
+        cand = fuentes.Candidato(
+            url="https://ejemplo.invalido/x.jpg", titulo="Prueba",
+            autor="Fulanito", licencia="cc0",
+            url_origen="https://ejemplo.invalido/x", proveedor="Openverse/prueba")
+        return _Img.open(base_png), cand, []
+    monkeypatch.setattr(fuentes, "resolver", resolver_falso)
+
+    r = render.renderizar(concepto, perfil, Cache(tmp_path / "c"),
+                          salida=tmp_path / "salida")
+    assert r.ruta.is_file()
+    assert r.atribuciones[0].fuente == "Openverse/prueba"
+    assert r.atribuciones[0].autor == "Fulanito"
 
 
 def test_escribe_creditos_con_la_licencia_declarada(tmp_path, base_png, concepto):

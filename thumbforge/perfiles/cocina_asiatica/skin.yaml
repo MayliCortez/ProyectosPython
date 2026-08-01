@@ -1,0 +1,97 @@
+nombre: "Wok y Fuego - identidad visual"
+
+lienzo:
+  ancho: 1280
+  alto: 720
+
+paleta:
+  fondo: "#1a0d0a"
+  texto: "#fff4d6"
+  acento: "#d94b1f"    # rojo cocina, brasa
+  sombra: "#000000"
+
+tipografia:
+  titular:
+    archivo: "fonts/DejaVuSans-Bold.ttf"
+    tamano_max: 128
+    tamano_min: 58
+    interletrado: -1
+    mayusculas: false
+  secundario:
+    archivo: "fonts/DejaVuSans-Regular.ttf"
+    tamano_max: 48
+    tamano_min: 28
+    interletrado: 0
+    mayusculas: false
+
+texto:
+  posicion: "izq_inf"
+  ancho_max_pct: 58
+  interlineado: 1.02
+  color: "#fff4d6"
+  contorno:
+    grosor: 6
+    color: "#1a0d0a"
+  sombra:
+    desplazamiento: [4, 4]
+    desenfoque: 12
+    opacidad: 0.7
+
+placa:
+  activa: false
+
+gradiente:
+  activo: true
+  color: "#000000"
+  opacidad: 0.55
+  direccion: "abajo"
+  alto_pct: 50
+
+barra_acento:
+  activa: true
+  color: "#d94b1f"
+  grosor_px: 8
+  posicion: "sobre_texto"
+
+logo:
+  archivo: "assets/logo.png"
+  posicion: "der_sup"
+  ancho_pct: 12
+  opacidad: 0.9
+  margen_pct: 3
+
+zonas_seguras:
+  inferior_pct: 8
+  inferior_derecha_pct: 18
+
+# Comida bien iluminada: alta saturacion, tonos calidos, contraste real por
+# la textura del plato.
+colorimetria:
+  contraste_minimo: 5.0
+  contraste_objetivo: 9.0
+  armonia_preferida: "complementario"
+  armonia_ajuste_minimo: 0.50
+  calidez_objetivo: 0.55
+  calidez_tolerancia: 0.35
+  saturacion_maxima: 0.85
+  saturacion_minima: 0.20
+  luminancia_objetivo: 0.35
+  luminancia_tolerancia: 0.25
+  delta_e_minimo_entre_variantes: 12.0
+  colores_texto: ["#fff4d6", "#f7c76b"]
+  colores_refuerzo: ["#1a0d0a", "#000000"]
+  refuerzo_preferido: "contorno"
+  max_colores_paleta: 5
+  peso_minimo_paleta: 0.03
+
+composicion:
+  punto_focal_preferido: "superior_derecho"
+  espacio_negativo_minimo: 0.25
+  detalle_maximo_bajo_texto: 0.32
+  margen_pct: 4
+  desbalance_maximo: 0.45
+  separacion_sujeto_minima: 0.30
+  retencion_desenfoque_minima: 0.35
+  legibilidad_feed_minima: 0.55
+  alto_texto_feed_minimo: 10
+  alinear_a_tercios: true

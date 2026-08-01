@@ -1,0 +1,40 @@
+nombre: "Wok y Fuego"
+alias: ["cocina", "wok"]
+idioma: "es-419"
+descripcion_audiencia: >-
+  Hispanohablantes 20-45 que cocinan en casa y buscan recetas asiaticas
+  accesibles. Valoran la foto real del plato terminado por sobre el estilismo.
+
+politica_base_visual:
+  orden_preferencia: ["foto_archivo", "foto_editada", "generada"]
+  generacion_ia_permitida_para: ["textura", "fondo_abstracto", "vapor", "humo"]
+  generacion_ia_prohibida_para: ["plato_terminado", "ingrediente_real",
+                                 "persona_real", "marca_reconocible"]
+  razon: >-
+    La audiencia distingue de inmediato un plato generado por IA -bordes
+    demasiado prolijos, salsas que brillan mal, cantidades imposibles de
+    verdura- y castiga esos videos en comentarios.
+
+personas_reales:
+  aparecen: false
+  categorias: ["persona_real"]
+  solo_licencia_verificada: false
+  generar_con_ia: false
+  razon: "El canal no muestra rostros: el sujeto es siempre el plato."
+
+copy:
+  max_palabras: 4
+  prohibido: ["emojis", "MAYUSCULAS EN TODA LA LINEA", "brutal", "increible"]
+  registro: "apetitoso, directo, sin exageracion"
+  no_duplicar_titulo: true
+
+corpus:
+  canales_referencia: []
+  queries:
+    - "receta wok casera"
+    - "cocina china casera espanol"
+    - "plato asiatico casero"
+
+campos_extra_anotacion:
+  - "textura_visible"
+  - "temperatura_percibida"
