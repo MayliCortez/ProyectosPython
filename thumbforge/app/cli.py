@@ -104,6 +104,92 @@ def cmd_politica(args: argparse.Namespace) -> int:
     return 0 if all(v.ok for v in veredictos) else 1
 
 
+def cmd_run(args: argparse.Namespace) -> int:
+    """Guion -> 3 miniaturas + QA.
+
+    Con --conceptos se saltea M4 y se parte de un brief ya escrito: es el
+    camino que no necesita claves de API y el que permite auditar el render
+    sin gastar una llamada.
+    """
+    from .cache import Cache
+    from .modulos import qa as mod_qa
+    from .modulos import render as mod_render
+
+    perfil = mod_perfiles.cargar_perfil(args.perfil)
+    cache = Cache()
+    salida = rutas.dir_salida()
+
+    if args.conceptos:
+        datos = json.loads(Path(args.conceptos).read_text("utf-8"))
+        conceptos = datos if isinstance(datos, list) else datos.get("conceptos", [datos])
+    else:
+        print("Todavia falta cablear M4 a la CLI: por ahora pasale un brief ya "
+              "hecho con --conceptos, y opcionalmente una base con --imagen.",
+              file=sys.stderr)
+        return 3
+
+    imagenes = [Path(p) for p in (args.imagen or [])]
+    if imagenes and len(imagenes) not in (1, len(conceptos)):
+        print(f"Pasaste {len(imagenes)} imagen(es) para {len(conceptos)} conceptos: "
+              f"tiene que ser una sola (se usa para todos) o una por concepto.",
+              file=sys.stderr)
+        return 2
+
+    resultados, fallidos = [], []
+    for i, concepto in enumerate(conceptos):
+        base = None
+        if imagenes:
+            base = imagenes[0] if len(imagenes) == 1 else imagenes[i]
+        try:
+            resultados.append(mod_render.renderizar(concepto, perfil, cache,
+                                                    imagen_local=base, salida=salida))
+        except ErrorThumbforge as exc:
+            fallidos.append((concepto.get("id", f"#{i}"), str(exc)))
+
+    if fallidos:
+        print(tabla.titulo("Conceptos rechazados"))
+        for cid, motivo in fallidos:
+            print(f"{cid}:\n{motivo}\n")
+    if not resultados:
+        print("Ningun concepto llego a render.", file=sys.stderr)
+        return 1
+
+    filas = [[r.concepto_id, r.ruta.name, f"{r.bytes:,}", str(r.calidad),
+              r.eleccion.nombre, r.decision_texto.color] for r in resultados]
+    print(tabla.titulo("Miniaturas"))
+    print(tabla.tabla(["Concepto", "Archivo", "Bytes", "Calidad", "Ancla", "Color"], filas))
+
+    informe = mod_qa.revisar(resultados, perfil)
+    ruta_qa = mod_qa.escribir_qa(informe)
+    ruta_creditos = mod_render.escribir_creditos(
+        [a for r in resultados for a in r.atribuciones])
+    ruta_brief = salida / f"{perfil.slug}_brief.json"
+    ruta_brief.write_text(json.dumps(conceptos, ensure_ascii=False, indent=2), "utf-8")
+
+    print(tabla.titulo("QA"))
+    filas = [[v.concepto_id, tabla.OK if v.ok else tabla.ERROR,
+              f"{v.contraste_p5:.2f}:1", f"{v.legibilidad.puntaje:.2f}",
+              str(len(v.hallazgos))] for v in informe.variantes]
+    print(tabla.tabla(["Concepto", "Estado", "Contraste p5", "Legibilidad", "Hallazgos"],
+                      filas))
+    for v in informe.variantes:
+        for h in v.hallazgos:
+            print(f"  {v.concepto_id}: {h}")
+    for par in informe.pares:
+        if par.demasiado_parecidas:
+            print(f"  {par.a} y {par.b} son demasiado parecidas: {par.motivo}")
+
+    print(f"\nEn {salida}:")
+    for r in resultados:
+        print(f"  {r.ruta.name}")
+    for p in (ruta_brief, ruta_qa, ruta_creditos):
+        print(f"  {p.name}")
+
+    if informe.a_reemplazar():
+        print(f"\nM4 tiene que reemplazar: {', '.join(informe.a_reemplazar())}")
+    return 0 if informe.ok else 1
+
+
 def _pendiente(paso: int, que: str):
     def _cmd(args: argparse.Namespace) -> int:
         print(f"'{que}' llega en el paso {paso} del orden de construccion.")
@@ -143,8 +229,13 @@ def construir_parser() -> argparse.ArgumentParser:
 
     r = sub.add_parser("run", help="Guion -> 3 miniaturas + QA")
     r.add_argument("--perfil", required=True)
-    r.add_argument("--guion", required=True)
-    r.set_defaults(func=_pendiente(7, "run"))
+    r.add_argument("--guion", help="Guion en Markdown (necesita M4 y claves de API)")
+    r.add_argument("--conceptos",
+                   help="Brief ya hecho en JSON: saltea M4 y no toca la red")
+    r.add_argument("--imagen", action="append",
+                   help="Base visual local. Una sola para todos los conceptos, "
+                        "o repetir el flag una vez por concepto")
+    r.set_defaults(func=cmd_run)
 
     c = sub.add_parser("corpus", help="Recolecta y anota el corpus del perfil")
     c.add_argument("--perfil", required=True)
