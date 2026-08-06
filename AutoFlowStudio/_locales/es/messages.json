@@ -1,0 +1,8 @@
+{
+  "extensionName": {
+    "message": "AutoFlow Studio — Automatización por lotes para Google Flow"
+  },
+  "extensionDescription": {
+    "message": "Genera videos e imágenes por lotes en Google Flow (Veo / Nano Banana): cola automática, reintentos, delays anti rate-limit y auto-descarga."
+  }
+}

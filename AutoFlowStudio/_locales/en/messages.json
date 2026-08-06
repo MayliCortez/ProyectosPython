@@ -1,0 +1,8 @@
+{
+  "extensionName": {
+    "message": "AutoFlow Studio — Batch Automation for Google Flow"
+  },
+  "extensionDescription": {
+    "message": "Batch-generate videos and images on Google Flow (Veo / Nano Banana): automatic queue, retries, anti-rate-limit delays and auto-download."
+  }
+}
